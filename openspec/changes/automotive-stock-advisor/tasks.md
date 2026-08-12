@@ -330,29 +330,29 @@
 
 ### WU-01: Django Foundation & Core Models
 
-**T-001**: Django project scaffold  
+**[x] T-001**: Django project scaffold  
 **Capability**: operations  
 **Work unit**: WU-01  
 **Description**: Initialize Django 5.1+ project with `config/` (settings, urls, wsgi/asgi), `apps/` directory structure, and basic settings (DATABASE_URL, SECRET_KEY, DEBUG). Configure PostgreSQL 16+ connection. Add pytest, pytest-django, factory_boy to dev dependencies.  
-**Files affected**: `manage.py`, `config/settings.py`, `config/urls.py`, `config/wsgi.py`, `requirements.txt`, `pytest.ini`  
+**Files affected**: `manage.py`, `config/settings/`, `config/urls.py`, `config/wsgi.py`, `requirements.txt`, `pytest.ini`  
 **Complexity**: S (0.5 day)  
 **Depends on**: None  
-**Acceptance criteria**: `python manage.py runserver` starts without errors, `pytest` runs with zero tests
+**Acceptance criteria**: `python manage.py runserver` starts without errors, `pytest` runs
 
-**T-002**: Core models — Tenant, User, Role, UserRole  
+**[x] T-002**: Core models — Tenant, User, Role, UserRole  
 **Capability**: user-management  
 **Work unit**: WU-01  
 **Description**: Create `apps/core/models.py` with Tenant (id, name, config_json), User (id, email, password_hash, is_active), Role (id, name), UserRole (id, user_id, role_id, branch_id, scope_json). Add migrations. Register in admin panel.  
-**Files affected**: `apps/core/models.py`, `apps/core/migrations/`, `apps/core/admin.py`  
+**Files affected**: `apps/core/models.py`, `apps/core/migrations/`, `apps/core/admin.py`, `apps/accounts/models.py`, `apps/accounts/admin.py`  
 **Complexity**: M (1 day)  
 **Depends on**: T-001  
 **Acceptance criteria**: Migrations apply successfully, admin panel shows Tenant/User/Role/UserRole, can create instances
 
-**T-003**: Authentication flow — login/logout  
+**[x] T-003**: Authentication flow — login/logout  
 **Capability**: user-management  
 **Work unit**: WU-01  
 **Description**: Configure Django sessions (2h idle, 24h absolute expiry). Add django-allauth for email verification and password reset. Create login/logout views and templates. Set SESSION_COOKIE_AGE and SESSION_EXPIRE_AT_BROWSER_CLOSE.  
-**Files affected**: `config/settings.py`, `apps/accounts/views.py`, `apps/accounts/urls.py`, `templates/accounts/login.html`, `templates/accounts/logout.html`  
+**Files affected**: `config/settings/`, `apps/accounts/views.py`, `apps/accounts/urls.py`, `templates/accounts/login.html`, `templates/accounts/logout.html`  
 **Complexity**: M (1 day)  
 **Depends on**: T-002  
 **Acceptance criteria**: User can login with email/password, session expires after 2h idle, logout clears session
