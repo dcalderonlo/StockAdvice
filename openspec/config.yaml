@@ -1,0 +1,49 @@
+schema: spec-driven
+
+context: |
+  Scheduled stock replenishment advisory service.
+  Runs on user-configurable schedule (weekly / biweekly / monthly / quarterly).
+  Reads database (references, warehouses, available stock).
+  Notifies on low stock or insufficient coverage for selected period.
+  Tries inter-branch transfers first; falls back to external supplier.
+  Roles: administrator, warehouse manager, warehouse coordinator.
+  Notifications: email + in-app.
+  Stack not yet selected (empty project). User requested starting with a PRD.
+
+testing:
+  strict_tdd: false
+  runner:
+    command: ""
+    framework: ""
+  layers:
+    unit: false
+    integration: false
+    e2e: false
+  coverage: false
+  linter: ""
+  type_checker: ""
+  formatter: ""
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Include sequence diagrams for complex flows
+    - Document architecture decisions with rationale
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    guidelines:
+      - Follow existing code patterns
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: ""
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas
