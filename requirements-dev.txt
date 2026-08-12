@@ -1,0 +1,10 @@
+# Development dependencies for StockAdvice.
+# Install with: pip install -r requirements.txt -r requirements-dev.txt
+
+pytest>=8.3,<8.4
+pytest-django>=4.8,<4.9
+pytest-cov>=5.0,<5.1
+pytest-mock>=3.14,<3.15
+factory_boy>=3.3,<3.4
+django-debug-toolbar>=4.4,<4.5
+ruff>=0.6,<0.7
