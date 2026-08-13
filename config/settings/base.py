@@ -32,8 +32,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "apps.core",
     "apps.accounts",
-    "apps.branches",
-    "apps.catalog",
+    "apps.notifications",
 ]
 
 MIDDLEWARE = [

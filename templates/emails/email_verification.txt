@@ -1,0 +1,9 @@
+{% extends "emails/base.txt" %}
+
+{% block content %}Verifica tu correo electrónico
+
+Para completar tu registro, visita este enlace:
+{{ verification_link }}
+
+Este enlace expirará en 24 horas.
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Invitar usuario - StockAdvice{% endblock %}
+
+{% block content %}
+<h1>Invitar usuario</h1>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Enviar invitación</button>
+</form>
+{% endblock %}

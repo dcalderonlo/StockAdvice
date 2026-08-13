@@ -359,7 +359,7 @@
 
 ### WU-02: User Management & Invitation Flow
 
-**T-004**: User invitation model and email template  
+**[x] T-004**: User invitation model and email template  
 **Capability**: user-management  
 **Work unit**: WU-02  
 **Description**: Create Invitation model (id, email, role_id, branch_id, scope_json, token, expires_at, accepted_at). Create email template for invitation with activation link. Token expires after 7 days (configurable).  
@@ -368,7 +368,7 @@
 **Depends on**: T-003  
 **Acceptance criteria**: Invitation model exists, email template renders with activation link
 
-**T-005**: Invitation service — send and accept  
+**[x] T-005**: Invitation service — send and accept  
 **Capability**: user-management  
 **Work unit**: WU-02  
 **Description**: Create InvitationService.send_invitation(email, role_id, branch_id, scope_json) that generates token, creates Invitation, sends email. Create InvitationService.accept_invitation(token, password) that validates token, creates User, marks Invitation as accepted.  
@@ -377,7 +377,7 @@
 **Depends on**: T-004  
 **Acceptance criteria**: Admin can send invitation, recipient receives email, clicks link, creates password, account activated
 
-**T-006**: Multi-role assignment and permission union  
+**[x] T-006**: Multi-role assignment and permission union  
 **Capability**: user-management  
 **Work unit**: WU-02  
 **Description**: Implement User.get_all_permissions() that unions all assigned roles' permissions. Add conflict of interest warnings in admin panel for risky combinations (admin + warehouse_manager). Audit log records role_used_id for each action.  
@@ -386,7 +386,7 @@
 **Depends on**: T-005  
 **Acceptance criteria**: User with multiple roles has union of permissions, admin panel warns about conflicts, audit log records role used
 
-**T-007**: Hierarchical access control  
+**[x] T-007**: Hierarchical access control  
 **Capability**: user-management  
 **Work unit**: WU-02  
 **Description**: Implement permission checks: admin (all), gerente (org-wide), coordinator (scope only), branch manager (own branch only). Create decorators or mixins for view-level access control. Enforce user management hierarchy (admin manages all, gerente manages gerente and below, coordinator manages branch managers in scope).  

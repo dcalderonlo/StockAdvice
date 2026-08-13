@@ -1,4 +1,4 @@
-"""Core models: Tenant and tenant-aware base class."""
+"""Core models: Tenant, AuditLog, and tenant-aware base class."""
 
 from __future__ import annotations
 
@@ -67,3 +67,30 @@ class TenantAwareModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class AuditLog(models.Model):
+    """Immutable audit trail recording who did what and which role was used."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        "accounts.User", on_delete=models.CASCADE, related_name="audit_logs"
+    )
+    role_used = models.ForeignKey(
+        "accounts.Role",
+        on_delete=models.SET_NULL,
+        related_name="audit_logs",
+        null=True,
+        blank=True,
+    )
+    action = models.CharField(max_length=100)
+    entity_type = models.CharField(max_length=100)
+    entity_id = models.UUIDField(null=True, blank=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.action} by {self.user} at {self.created_at}"
