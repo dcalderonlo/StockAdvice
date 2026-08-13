@@ -29,6 +29,16 @@ class Tenant(models.Model):
         max_length=50, choices=Sector.choices, default=Sector.AUTOMOTIVE
     )
     config = models.JSONField(default=dict, blank=True)
+    dms_adapter_type = models.CharField(
+        max_length=50,
+        default="mock",
+        help_text="Adapter identifier, e.g. 'mock', 'autologica', 'custom'.",
+    )
+    dms_config = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text="Adapter-specific configuration (connection string, credentials, etc.).",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
