@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Aceptar invitación - StockAdvice{% endblock %}
+
+{% block content %}
+<h1>Aceptar invitación</h1>
+<p>Has sido invitado como <strong>{{ invitation.email }}</strong>. Crea tu contraseña para continuar.</p>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Crear cuenta</button>
+</form>
+{% endblock %}

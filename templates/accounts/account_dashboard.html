@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Mi cuenta - StockAdvice{% endblock %}
+
+{% block content %}
+<h1>Mi cuenta</h1>
+
+{% if not user.is_verified %}
+<div class="warning">Tu correo aún no está verificado.</div>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Guardar cambios</button>
+</form>
+
+<h2>Roles asignados</h2>
+<ul>
+  {% for role in roles %}
+  <li>{{ role.name }}</li>
+  {% empty %}
+  <li>No tienes roles asignados.</li>
+  {% endfor %}
+</ul>
+
+<h2>Sucursales asignadas</h2>
+<ul>
+  {% for branch_id in branch_scope %}
+  <li>{{ branch_id }}</li>
+  {% empty %}
+  <li>Acceso sin límite de sucursal.</li>
+  {% endfor %}
+</ul>
+
+<p><a href="{% url 'password_change' %}">Cambiar contraseña</a></p>
+{% endblock %}
