@@ -1,0 +1,4 @@
+{% block content %}{% endblock %}
+
+---
+StockAdvice — Sistema de asesoría de reposición de inventario

@@ -1,0 +1,13 @@
+{% extends "emails/base.html" %}
+
+{% block subject %}Invitación a StockAdvice{% endblock %}
+
+{% block content %}
+<h1>Has sido invitado a StockAdvice</h1>
+<p>{{ invited_by.email }} te ha invitado a unirte a StockAdvice.</p>
+<p>Haz clic en el botón para crear tu contraseña y activar tu cuenta:</p>
+<p><a href="{{ activation_link }}" class="button">Aceptar invitación</a></p>
+<p>O copia este enlace en tu navegador:</p>
+<p>{{ activation_link }}</p>
+<p>Este enlace expirará en 7 días.</p>
+{% endblock %}
