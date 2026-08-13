@@ -397,7 +397,7 @@
 
 ### WU-03: Branch & Catalog Models
 
-**T-008**: Branch model with DC topology  
+**[x] T-008**: Branch model with DC topology  
 **Capability**: catalog-ingestion  
 **Work unit**: WU-03  
 **Description**: Create Branch model (id, tenant_id, name, branch_type [sucursal/centro_distribucion], parent_branch_id, config_json). Add self-referential FK for DC topology. Register in admin.  
@@ -406,7 +406,7 @@
 **Depends on**: T-002  
 **Acceptance criteria**: Branch model supports DC topology, admin can create branches with parent_branch_id
 
-**T-009**: Part and CrossReference models  
+**[x] T-009**: Part and CrossReference models  
 **Capability**: catalog-ingestion  
 **Work unit**: WU-03  
 **Description**: Create Part model (id, tenant_id, internal_sku_code, primary_mfr_code, alt_mfr_codes [JSONB], description, lead_time_days). Create CrossReference model (id, part_id, related_part_id, relation_type [substitute/alternative/successor], source_dms). Add unique constraint on (tenant_id, internal_sku_code).  
@@ -415,7 +415,7 @@
 **Depends on**: T-008  
 **Acceptance criteria**: Part model stores alt_mfr_codes as JSONB, CrossReference links related parts, admin can view/edit
 
-**T-010**: CSV upload for parts catalog  
+**[x] T-010**: CSV upload for parts catalog  
 **Capability**: catalog-ingestion  
 **Work unit**: WU-03  
 **Description**: Create admin action to upload parts catalog via CSV. Parse CSV, validate required fields (internal_sku_code, primary_mfr_code), create Part instances. Handle duplicates (update existing by internal_sku_code).  
@@ -426,7 +426,7 @@
 
 ### WU-04: DMS Adapter Interface & Mock Adapter
 
-**T-011**: BaseDMSAdapter abstract interface  
+**[x] T-011**: BaseDMSAdapter abstract interface  
 **Capability**: catalog-ingestion  
 **Work unit**: WU-04  
 **Description**: Create `adapters/base.py` with BaseDMSAdapter ABC defining: read_parts(tenant_id), read_stock(branch_id), read_sales(branch_id, since_date), read_cross_references(tenant_id), read_branches(tenant_id). Each method returns Iterator of data classes (PartData, StockData, SalesData, CrossRefData, BranchData).  
@@ -435,7 +435,7 @@
 **Depends on**: T-009  
 **Acceptance criteria**: Abstract interface defined, concrete adapters must implement all methods
 
-**T-012**: MockDMSAdapter with fixture data  
+**[x] T-012**: MockDMSAdapter with fixture data  
 **Capability**: catalog-ingestion  
 **Work unit**: WU-04  
 **Description**: Create MockDMSAdapter that returns hardcoded fixture data (50 SKUs, 4 branches, 12 months of sales). Use for testing and local development. Fixture data should produce realistic recommendations.  
