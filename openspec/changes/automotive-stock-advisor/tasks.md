@@ -444,7 +444,7 @@
 **Depends on**: T-011  
 **Acceptance criteria**: MockDMSAdapter returns fixture data, can be swapped in via settings
 
-**T-013**: Retry mechanism with exponential backoff  
+**[x] T-013**: Retry mechanism with exponential backoff  
 **Capability**: catalog-ingestion  
 **Work unit**: WU-04  
 **Description**: Add retry decorator to BaseDMSAdapter methods: 3 attempts, exponential backoff (1s, 2s, 4s), 30s timeout per call. Use `tenacity` library. Log each retry attempt. Raise exception after all retries fail.  
