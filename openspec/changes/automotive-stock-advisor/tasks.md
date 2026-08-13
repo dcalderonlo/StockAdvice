@@ -455,7 +455,7 @@
 
 ### WU-05: Inventory Models & Data Ingestion
 
-**T-014**: StockLevel and StockMovement models  
+**[x] T-014**: StockLevel and StockMovement models  
 **Capability**: catalog-ingestion  
 **Work unit**: WU-05  
 **Description**: Create StockLevel model (id, branch_id, part_id, stock_disponible, stock_en_transito, last_synced_at). Create StockMovement model (id, branch_id, part_id, movement_type [sale/purchase/transfer], quantity, date). Add unique constraint on (branch_id, part_id) for StockLevel.  
@@ -464,7 +464,7 @@
 **Depends on**: T-009  
 **Acceptance criteria**: StockLevel stores stock_disponible and stock_en_transito separately, StockMovement records movement type and date
 
-**T-015**: Inventory ingestion service  
+**[x] T-015**: Inventory ingestion service  
 **Capability**: catalog-ingestion  
 **Work unit**: WU-05  
 **Description**: Create InventoryIngestionService that reads from DMS adapter and persists to DB. Methods: ingest_stock(branch_id), ingest_sales(branch_id, since_date), ingest_cross_references(tenant_id). Handle missing SKU in stock table (treat as zero stock, flag as cold-start).  
@@ -473,7 +473,7 @@
 **Depends on**: T-014, T-012  
 **Acceptance criteria**: Service reads from mock adapter, persists to DB, missing SKU treated as zero stock
 
-**T-016**: Sales history backfill (12+ months)  
+**[x] T-016**: Sales history backfill (12+ months)  
 **Capability**: catalog-ingestion  
 **Work unit**: WU-05  
 **Description**: Create method to import 12+ months of historical sales data from DMS. Validate data completeness (no gaps in monthly records). Warn if insufficient history (<12 months) but do not block. Flag all SKUs as cold-start if zero history.  
