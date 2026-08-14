@@ -79,7 +79,12 @@ class AuditLog(models.Model):
         blank=True,
     )
     user = models.ForeignKey(
-        "accounts.User", on_delete=models.CASCADE, related_name="audit_logs"
+        "accounts.User",
+        on_delete=models.CASCADE,
+        related_name="audit_logs",
+        null=True,
+        blank=True,
+        help_text="Null for system actions that are not triggered by a specific user.",
     )
     role_used = models.ForeignKey(
         "accounts.Role",
@@ -105,4 +110,5 @@ class AuditLog(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"{self.action} by {self.user} at {self.created_at}"
+        actor = self.user or "system"
+        return f"{self.action} by {actor} at {self.created_at}"

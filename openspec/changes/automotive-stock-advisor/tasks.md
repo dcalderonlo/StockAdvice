@@ -676,32 +676,33 @@
 
 ### WU-12: Approval Workflow — Escalation & Cross-Coordinator
 
-**T-037**: Threshold-based escalation  
+**[x] T-037**: Threshold-based escalation  
 **Capability**: approval-workflow  
 **Work unit**: WU-12  
 **Description**: Add escalation_threshold_value, escalation_threshold_volume, escalation_threshold_impact fields to Tenant.config_json. Create RecommendationService.check_escalation(recommendation_id) that compares recommendation value/volume/impact against thresholds. If crossed, auto-escalate to coordinator (change assigned_approver_id to coordinator). Log escalation with reason.  
 **Files affected**: `apps/core/models.py`, `apps/replenishment/services.py`  
 **Complexity**: M (1 day)  
 **Depends on**: T-035  
-**Acceptance criteria**: Recommendation crossing threshold auto-escalates to coordinator, logged with reason
+**Acceptance criteria**: Recommendation crossing threshold auto-escalates to coordinator, logged with reason  
 
-**T-038**: Cross-coordinator transfer approval  
+**[x] T-038**: Cross-coordinator transfer approval  
 **Capability**: approval-workflow  
 **Work unit**: WU-12  
 **Description**: Detect cross-coordinator transfers (source and destination branches in different coordinator scopes). Route to gerente for approval. Notify both coordinators (but they do not approve). Add is_cross_coordinator flag to Recommendation model.  
 **Files affected**: `apps/replenishment/models.py`, `apps/replenishment/services.py`, `apps/notifications/services.py`  
 **Complexity**: M (1.5 days)  
 **Depends on**: T-037  
-**Acceptance criteria**: Cross-coordinator transfer routed to gerente, coordinators notified, gerente approval required
+**Acceptance criteria**: Cross-coordinator transfer routed to gerente, coordinators notified, gerente approval required  
 
-**T-039**: Coordinator escalation to gerente  
+**[x] T-039**: Coordinator escalation to gerente  
 **Capability**: approval-workflow  
 **Work unit**: WU-12  
 **Description**: Allow coordinator to escalate recommendation to gerente (manual escalation). Change assigned_approver_id to gerente. Log escalation with from_role=coordinator, to_role=gerente.  
 **Files affected**: `apps/replenishment/services.py`  
 **Complexity**: S (0.5 day)  
 **Depends on**: T-037  
-**Acceptance criteria**: Coordinator can escalate to gerente, logged
+**Acceptance criteria**: Coordinator can escalate to gerente, logged  
+
 
 ### WU-13: Demand Override
 

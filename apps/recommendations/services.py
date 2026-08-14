@@ -20,8 +20,9 @@ from apps.catalog.services import VelocityCalculator
 from apps.core.models import AuditLog, Tenant
 
 from .enums import RecommendationState
+from .escalation import EscalationService
 from .models import InvalidTransitionError, Recommendation
-from .permissions import assert_can_approve, get_active_role
+from .permissions import assert_can_approve, get_active_role, is_cross_coordinator
 from .source_resolution import SourceResolutionService
 from .transitions import transition_recommendation
 
@@ -58,6 +59,7 @@ class RecommendationGenerator:
         self.classification_engine = ClassificationEngine(tenant)
         self.planning_calculator = PlanningCalculator(tenant)
         self.source_resolution = SourceResolutionService(tenant)
+        self.escalation_service = EscalationService(tenant)
 
     def generate_for_branch(
         self, branch: Branch, run_date: date | None = None
@@ -189,6 +191,7 @@ class RecommendationGenerator:
         )
         recommendation.save()
         self.source_resolution.resolve_sources(recommendation)
+        self.escalation_service.check_and_escalate(recommendation)
         return recommendation
 
     def _dc_velocity_for_part(self, part: Part, distribution_center: Branch) -> float:
@@ -385,6 +388,7 @@ class RecommendationGenerator:
         )
 
         self.source_resolution.resolve_sources(rec)
+        self.escalation_service.check_and_escalate(rec)
 
         logger.info(
             "recommendation.created",
@@ -394,6 +398,7 @@ class RecommendationGenerator:
             pp=str(rec.punto_pedido),
             source_type=rec.source_type,
             is_partial=rec.is_partial,
+            escalation_level=rec.escalation_level,
         )
         return rec
 
@@ -463,9 +468,60 @@ class ApprovalService:
         )
         return rec
 
+    def _is_cross_coordinator(self, recommendation: Recommendation) -> bool:
+        """Return True when the recommendation crosses coordinator boundaries."""
+        return is_cross_coordinator(recommendation)
+
+    def approve_cross_coordinator_transfer(
+        self, recommendation: Recommendation, user: User, notes: str | None = None
+    ) -> Recommendation:
+        """Approve a transfer that crosses coordinator scopes.
+
+        Only a gerente may approve cross-coordinator transfers. Both source
+        and destination coordinators are notified via the audit log.
+        """
+        if Role.GERENTE not in user.get_role_names():
+            raise PermissionDenied(
+                "Cross-coordinator transfers require gerente approval."
+            )
+        rec = self.approve_recommendation(recommendation, user, notes)
+        role_used_name = get_active_role(user, self.tenant)
+        AuditLog.objects.create(
+            tenant=self.tenant,
+            user=user,
+            role_used=self._role_for_log(role_used_name),
+            action="cross_coordinator_notified",
+            entity_type="recommendation",
+            entity_id=rec.id,
+            metadata={
+                "source_branch_id": str(recommendation.source_branch_id),
+                "destination_branch_id": str(recommendation.branch_id),
+                "source_coordinator_id": (
+                    str(recommendation.source_branch.coordinator_id)
+                    if recommendation.source_branch
+                    else None
+                ),
+                "destination_coordinator_id": str(recommendation.branch.coordinator_id),
+            },
+        )
+        logger.info(
+            "recommendation.cross_coordinator_approved",
+            recommendation_id=str(rec.id),
+            user_id=str(user.id),
+            source_branch_id=str(recommendation.source_branch_id),
+            destination_branch_id=str(recommendation.branch_id),
+        )
+        return rec
+
     def approve_recommendation(
         self, recommendation: Recommendation, user: User, notes: str | None = None
     ) -> Recommendation:
+        assert_can_approve(user, recommendation)
+        if self._is_cross_coordinator(recommendation):
+            if Role.GERENTE not in user.get_role_names():
+                raise PermissionDenied(
+                    "Cross-coordinator transfers require gerente approval."
+                )
         return self._transition_and_log(
             recommendation, user, "approve", RecommendationState.APPROVED, notes
         )
