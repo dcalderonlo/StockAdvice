@@ -1,13 +1,22 @@
-"""Part catalog, cross-reference, and classification result models."""
+"""Part catalog, cross-reference, classification result, and override models."""
 
 from __future__ import annotations
 
 import uuid
+from decimal import Decimal
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 
+from apps.branches.models import Branch
 from apps.core.models import TenantAwareModel
+
+
+class DemandOverrideType(models.TextChoices):
+    PERSISTENT = "persistent", "Persistent"
+    PER_RUN = "per_run", "Per-Run"
+    WITH_EXPIRY = "with_expiry", "With-Expiry"
 
 
 class LifecycleStage(models.TextChoices):
@@ -228,3 +237,112 @@ class ClassificationResult(TenantAwareModel):
     def __str__(self) -> str:
         scope = f"@{self.branch.code}" if self.branch else "tenant-wide"
         return f"{self.part.internal_sku_code} {self.lifecycle_stage} {scope}"
+
+
+class DemandOverrideManager(models.Manager):
+    """Manager helpers for demand overrides."""
+
+    def active_overrides(
+        self, part: "Part", branch: "Branch | None" = None
+    ) -> models.QuerySet["DemandOverride"]:
+        """Return all overrides for a part/branch, ordered by priority."""
+        return self.filter(
+            tenant=part.tenant,
+            part=part,
+            branch=branch,
+        ).order_by("override_type")
+
+    def expired_overrides(self) -> models.QuerySet["DemandOverride"]:
+        """Return WITH_EXPIRY overrides whose expires_at is in the past."""
+        today = timezone.now().date()
+        return self.filter(
+            override_type=DemandOverrideType.WITH_EXPIRY,
+            expires_at__lt=today,
+        )
+
+
+class DemandOverride(TenantAwareModel):
+    """A user-supplied override of the system-calculated expected demand.
+
+    Overrides replace the calculated velocity during planning. Three types:
+
+    - Persistent: stays in effect until manually changed.
+    - Per-run: applies to a single replenishment run only.
+    - With-expiry: stays in effect until ``expires_at`` then reverts.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    part = models.ForeignKey(
+        Part,
+        on_delete=models.CASCADE,
+        related_name="demand_overrides",
+    )
+    branch = models.ForeignKey(
+        "branches.Branch",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="demand_overrides",
+        help_text="Null means the override applies tenant-wide.",
+    )
+    override_type = models.CharField(
+        max_length=20,
+        choices=DemandOverrideType.choices,
+    )
+    override_value = models.DecimalField(
+        max_digits=12,
+        decimal_places=4,
+        help_text="Velocity or demand value to use instead of the calculated value.",
+    )
+    expires_at = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Required for WITH_EXPIRY overrides.",
+    )
+    run_id = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Required for PER_RUN overrides: the replenishment run this applies to.",
+    )
+    created_by = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.CASCADE,
+        related_name="demand_overrides_created",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+
+    objects = DemandOverrideManager()
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["tenant", "part", "branch", "override_type"],
+                name="unique_persistent_demand_override",
+                condition=models.Q(override_type=DemandOverrideType.PERSISTENT),
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["tenant", "part", "branch"]),
+            models.Index(fields=["expires_at"]),
+        ]
+
+    def __str__(self) -> str:
+        scope = f"@{self.branch.code}" if self.branch else "tenant-wide"
+        return f"{self.part.internal_sku_code} {self.override_type} {scope} = {self.override_value}"
+
+    def clean(self) -> None:
+        super().clean()
+        if self.override_type == DemandOverrideType.WITH_EXPIRY and not self.expires_at:
+            raise ValidationError(
+                {"expires_at": "WITH_EXPIRY overrides require an expires_at date."}
+            )
+        if self.override_type == DemandOverrideType.PER_RUN and not self.run_id:
+            raise ValidationError(
+                {"run_id": "PER_RUN overrides require a run_id."}
+            )
+        if self.override_value < Decimal("0"):
+            raise ValidationError(
+                {"override_value": "Override value cannot be negative."}
+            )

@@ -20,7 +20,7 @@ material's example.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING, Optional
 from uuid import UUID
@@ -206,22 +206,29 @@ class PlanningCalculator:
         self,
         part: "Part",
         branch: Branch,
-        velocity: float,
+        velocity: Optional[float] = None,
         stock_disponible: Optional[float] = None,
         stock_en_transito: Optional[float] = None,
         period_days: Optional[int] = None,
         security_days: Optional[int] = None,
+        run_date: Optional[date] = None,
+        run_id: Optional[str] = None,
     ) -> PlanningResult:
         """Calculate planning metrics for one part at one branch.
 
         Parameters
         ----------
         velocity:
-            Units per month. Should come from ``VelocityCalculator``.
+            Units per month. If ``None`` and no active override exists, the
+            value is computed with ``VelocityCalculator``.
         stock_disponible, stock_en_transito:
             If ``None``, values are read from ``StockLevel``.
         period_days, security_days:
             If ``None``, tenant defaults are used.
+        run_date:
+            Date used to evaluate WITH_EXPIRY overrides. Defaults to today.
+        run_id:
+            Identifier used to match PER_RUN overrides.
         """
         period = (
             period_days
@@ -234,6 +241,23 @@ class PlanningCalculator:
             else self.get_default_security_days(branch)
         )
         lead_time = self.get_lead_time(part, branch)
+
+        # Active demand overrides take precedence over calculated velocity.
+        from apps.catalog.overrides import OverrideService
+
+        override_service = OverrideService(self.tenant)
+        active_override = override_service.get_active_override(
+            part=part, branch=branch, run_date=run_date, run_id=run_id
+        )
+        if active_override is not None:
+            velocity = float(active_override.override_value)
+        elif velocity is None:
+            from apps.catalog.services import VelocityCalculator
+
+            velocity_result = VelocityCalculator(self.tenant).calculate_for_part(
+                part, branch
+            )
+            velocity = velocity_result.velocity
 
         if velocity < 0:
             logger.warning(
