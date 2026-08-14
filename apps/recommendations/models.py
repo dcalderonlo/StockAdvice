@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from apps.core.models import TenantAwareModel
 
-from .enums import RecommendationState
+from .enums import EscalationLevel, RecommendationState
 
 if TYPE_CHECKING:
     from apps.accounts.models import User
@@ -93,6 +93,29 @@ class Recommendation(TenantAwareModel):
         on_delete=models.SET_NULL,
         related_name="assigned_recommendations",
         help_text="Default approver (branch manager); escalation may reassign in WU-12.",
+    )
+    escalation_level = models.CharField(
+        max_length=20,
+        choices=EscalationLevel.choices,
+        default=EscalationLevel.NONE,
+        help_text="Current escalation level for this recommendation.",
+    )
+    escalation_reason = models.TextField(
+        blank=True,
+        help_text="Why this recommendation was escalated (threshold crossed, etc.).",
+    )
+    escalated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the recommendation was last escalated.",
+    )
+    escalated_by = models.ForeignKey(
+        "accounts.User",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="escalated_recommendations",
+        help_text="User who manually escalated the recommendation (system escalations leave this null).",
     )
     decided_by = models.ForeignKey(
         "accounts.User",

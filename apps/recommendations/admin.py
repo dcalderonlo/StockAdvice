@@ -16,6 +16,7 @@ class RecommendationAdmin(admin.ModelAdmin):
         "branch",
         "part",
         "state",
+        "escalation_level",
         "quantity",
         "source_type",
         "source_branch",
@@ -25,8 +26,16 @@ class RecommendationAdmin(admin.ModelAdmin):
         "punto_pedido",
         "created_at",
         "decided_at",
+        "escalated_at",
     )
-    list_filter = ("state", "source_type", "is_partial", "tenant", "branch")
+    list_filter = (
+        "state",
+        "escalation_level",
+        "source_type",
+        "is_partial",
+        "tenant",
+        "branch",
+    )
     search_fields = ("part__internal_sku_code", "part__description", "explanation")
     readonly_fields = (
         "id",

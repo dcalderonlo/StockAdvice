@@ -9,3 +9,9 @@ class RecommendationState(models.TextChoices):
     REJECTED = "rejected", "Rejected"
     HANDLED = "handled", "Handled"
     ORDERED = "ordered", "Ordered"
+
+
+class EscalationLevel(models.TextChoices):
+    NONE = "none", "None"
+    COORDINATOR = "coordinator", "Coordinator"
+    GERENTE = "gerente", "Gerente"
