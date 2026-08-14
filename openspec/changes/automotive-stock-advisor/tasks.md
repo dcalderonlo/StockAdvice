@@ -513,38 +513,38 @@
 
 ### WU-07: Classification Engine
 
-**T-020**: Volume Class derivation  
+**[x] T-020**: Volume Class derivation  
 **Capability**: classification-engine  
 **Work unit**: WU-07  
 **Description**: Create ClassificationService.classify_volume_class(part_id, tenant_id) based on annual sales: VC1 >250, VC2 121-250, VC3 61-120, VC4 31-60, VC5 15-30, VC6 7-14, VC7 4-6, VC8 1-3. Zero sales returns no Volume Class (cold-start). Create ClassificationResult model (id, part_id, volume_class, lifecycle_stage, classified_at).  
-**Files affected**: `apps/classification/services.py`, `apps/classification/models.py`, `apps/classification/migrations/`  
+**Files affected**: `apps/catalog/classification.py`, `apps/catalog/models.py`, `apps/catalog/migrations/`  
 **Complexity**: M (1 day)  
 **Depends on**: T-015  
 **Acceptance criteria**: 300 annual sales → VC1, 121 → VC2, 0 → no VC, boundary values correct
 
-**T-021**: Lifecycle Stage — New and Obsolete  
+**[x] T-021**: Lifecycle Stage — New and Obsolete  
 **Capability**: classification-engine  
 **Work unit**: WU-07  
 **Description**: Create ClassificationService.classify_lifecycle_stage(part_id, tenant_id). New (0-6 months): N1 >15 sales in first 6 months, N2 4-15, N3 0-3. Obsolete: OBS-S (successor exists), OBS-N (>6 months in stock, never sold), OBS-P (>12 months no sales), OBS-R (>24 months no sales). Inactive: >12 months no sales AND no stock.  
-**Files affected**: `apps/classification/services.py`  
+**Files affected**: `apps/catalog/classification.py`  
 **Complexity**: M (1.5 days)  
 **Depends on**: T-020  
 **Acceptance criteria**: New SKU with 18 sales in 6 months → N1, SKU with 14 months no sales → OBS-P, SKU with 26 months no sales → OBS-R
 
-**T-022**: Special lifecycle codes (NS-C, NS-NS)  
+**[x] T-022**: Special lifecycle codes (NS-C, NS-NS)  
 **Capability**: classification-engine  
 **Work unit**: WU-07  
 **Description**: Add support for NS-C (campaign/recall) and NS-NS (non-stock/individual order). These require gerente confirmation before taking effect. Add confirmation workflow (pending → confirmed). NS-NS SKUs excluded from automatic replenishment.  
-**Files affected**: `apps/classification/services.py`, `apps/classification/models.py`  
+**Files affected**: `apps/catalog/classification.py`, `apps/catalog/models.py`  
 **Complexity**: S (0.5 day)  
 **Depends on**: T-021  
 **Acceptance criteria**: NS-C and NS-NS codes assigned, require gerente confirmation, NS-NS excluded from recommendations
 
-**T-023**: Cross-reference group classification  
+**[x] T-023**: Cross-reference group classification  
 **Capability**: classification-engine  
 **Work unit**: WU-07  
 **Description**: Create ClassificationService.classify_cross_reference_group(part_id) that applies the most conservative lifecycle stage across equivalent parts. Query all CrossReference records for the part, get lifecycle stages, pick most conservative (OBS-R > OBS-P > OBS-N > Active > New).  
-**Files affected**: `apps/classification/services.py`  
+**Files affected**: `apps/catalog/classification.py`  
 **Complexity**: S (0.5 day)  
 **Depends on**: T-021, T-009  
 **Acceptance criteria**: Group with Active + OBS-P → OBS-P, most conservative wins
