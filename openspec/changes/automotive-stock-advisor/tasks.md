@@ -647,7 +647,7 @@
 
 ### WU-11: Approval Workflow — State Machine
 
-**T-034**: Recommendation state transitions  
+**[x] T-034**: Recommendation state transitions  
 **Capability**: approval-workflow  
 **Work unit**: WU-11  
 **Description**: Create RecommendationService.transition_state(recommendation_id, new_state, user_id, role_id) that validates state transitions (pending → approved/rejected/handled, approved → ordered). Record each transition in AuditLog (user_id, role_used_id, action, entity_type, entity_id, timestamp, metadata_json).  
@@ -656,7 +656,7 @@
 **Depends on**: T-027  
 **Acceptance criteria**: State transitions valid, audit log records each transition with role used
 
-**T-035**: Branch manager as default approver  
+**[x] T-035**: Branch manager as default approver  
 **Capability**: approval-workflow  
 **Work unit**: WU-11  
 **Description**: Set default approver for pending recommendations to branch manager of target branch. Add assigned_approver_id field to Recommendation model. Query UserRole to find branch manager for the branch.  
@@ -665,7 +665,7 @@
 **Depends on**: T-034  
 **Acceptance criteria**: New recommendation assigned to branch manager of target branch
 
-**T-036**: Bulk actions (approve/reject/handle multiple)  
+**[x] T-036**: Bulk actions (approve/reject/handle multiple)  
 **Capability**: approval-workflow  
 **Work unit**: WU-11  
 **Description**: Create RecommendationService.bulk_transition(recommendation_ids, new_state, user_id, role_id) that processes multiple recommendations in one action. Filter to only pending recommendations. Log each transition individually in audit log. Return count of processed recommendations.  
