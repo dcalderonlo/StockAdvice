@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 import uuid
-from typing import ClassVar
-
 from django.db import models
 from django.utils.text import slugify
 
-from .managers import TenantManager
+from .managers import AuditLogManager, TenantManager
 
 
 class Tenant(models.Model):
@@ -73,6 +71,13 @@ class AuditLog(models.Model):
     """Immutable audit trail recording who did what and which role was used."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tenant = models.ForeignKey(
+        Tenant,
+        on_delete=models.CASCADE,
+        related_name="audit_logs",
+        null=True,
+        blank=True,
+    )
     user = models.ForeignKey(
         "accounts.User", on_delete=models.CASCADE, related_name="audit_logs"
     )
@@ -89,8 +94,15 @@ class AuditLog(models.Model):
     metadata = models.JSONField(default=dict, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    objects = AuditLogManager()
+
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["tenant", "entity_type", "entity_id"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["user"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.action} by {self.user} at {self.created_at}"

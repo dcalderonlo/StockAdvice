@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from uuid import UUID
+
 from django.db import models
 
 
@@ -25,3 +27,12 @@ class TenantAwareManager(models.Manager):
 
     def for_tenant(self, tenant_id: str) -> models.QuerySet:
         return self.get_queryset().filter(tenant_id=tenant_id)
+
+
+class AuditLogManager(models.Manager):
+    """Manager for ``AuditLog`` with entity-scoped lookups."""
+
+    def for_entity(self, entity_type: str, entity_id: UUID) -> models.QuerySet:
+        return self.get_queryset().filter(
+            entity_type=entity_type, entity_id=entity_id
+        )

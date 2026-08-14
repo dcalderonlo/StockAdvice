@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from datetime import date
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
@@ -85,6 +86,14 @@ class Recommendation(TenantAwareModel):
     explanation = models.TextField(blank=True)
     classification = models.CharField(max_length=100, blank=True)
     velocity = models.DecimalField(max_digits=12, decimal_places=2)
+    assigned_approver = models.ForeignKey(
+        "accounts.User",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="assigned_recommendations",
+        help_text="Default approver (branch manager); escalation may reassign in WU-12.",
+    )
     decided_by = models.ForeignKey(
         "accounts.User",
         null=True,
@@ -94,6 +103,11 @@ class Recommendation(TenantAwareModel):
     )
     decided_at = models.DateTimeField(null=True, blank=True)
     decision_notes = models.TextField(blank=True)
+    run_date = models.DateField(
+        default=date.today,
+        db_index=True,
+        help_text="Run date used for idempotency and rejection reopening rules.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

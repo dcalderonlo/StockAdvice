@@ -100,6 +100,7 @@ def log_action(
     metadata: dict | None = None,
 ) -> AuditLog:
     return AuditLog.objects.create(
+        tenant=user.tenant,
         user=user,
         role_used=role,
         action=action,
