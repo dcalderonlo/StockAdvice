@@ -580,20 +580,20 @@
 
 ### WU-09: Recommendation Engine — Core Logic
 
-**T-027**: Recommendation model and trigger logic  
+**[x] T-027**: Recommendation model and trigger logic  
 **Capability**: recommendation-engine  
 **Work unit**: WU-09  
 **Description**: Create Recommendation model (id, branch_id, part_id, quantity, source_type [transfer/supplier], source_branch_id, state [pending/approved/rejected/handled/ordered], classification_code, created_at, run_date). Create RecommendationService.generate_recommendations(branch_id, run_date) that triggers when Stock Disponible + Stock en Tránsito ≤ Punto de Pedido.  
-**Files affected**: `apps/replenishment/models.py`, `apps/replenishment/migrations/`, `apps/replenishment/services.py`  
+**Files affected**: `apps/recommendations/models.py`, `apps/recommendations/migrations/`, `apps/recommendations/services.py`  
 **Complexity**: M (1 day)  
 **Depends on**: T-025, T-020  
 **Acceptance criteria**: Recommendation created when stock ≤ PP, includes SKU, classification, quantity, source type
 
-**T-028**: Cold-start and lifecycle exclusion  
+**[x] T-028**: Cold-start and lifecycle exclusion  
 **Capability**: recommendation-engine  
 **Work unit**: WU-09  
 **Description**: Add logic to skip SKUs with zero sales history (cold-start) — flag as "requires manual override" instead of generating recommendation. Exclude SKUs classified as OBS-R or NS-NS from automatic recommendations. Log skipped SKUs.  
-**Files affected**: `apps/replenishment/services.py`  
+**Files affected**: `apps/recommendations/services.py`  
 **Complexity**: S (0.5 day)  
 **Depends on**: T-027, T-021  
 **Acceptance criteria**: Cold-start SKU flagged, OBS-R and NS-NS excluded, logged
@@ -602,7 +602,7 @@
 **Capability**: recommendation-engine  
 **Work unit**: WU-09  
 **Description**: Add idempotency check: before creating Recommendation, check if one exists with same (branch_id, part_id, run_date). If exists, skip. This prevents duplicate recommendations on retry.  
-**Files affected**: `apps/replenishment/services.py`  
+**Files affected**: `apps/recommendations/services.py`  
 **Complexity**: S (0.5 day)  
 **Depends on**: T-027  
 **Acceptance criteria**: Same (branch_id, part_id, run_date) does not create duplicate

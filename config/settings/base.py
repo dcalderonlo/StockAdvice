@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "apps.catalog",
     "apps.inventory",
     "apps.notifications",
+    "apps.recommendations",
 ]
 
 MIDDLEWARE = [
