@@ -18,6 +18,7 @@ from apps.core.models import Tenant
 
 from .enums import RecommendationState
 from .models import InvalidTransitionError, Recommendation
+from .source_resolution import SourceResolutionService
 
 if TYPE_CHECKING:
     pass
@@ -51,6 +52,7 @@ class RecommendationGenerator:
         self.velocity_calculator = VelocityCalculator(tenant)
         self.classification_engine = ClassificationEngine(tenant)
         self.planning_calculator = PlanningCalculator(tenant)
+        self.source_resolution = SourceResolutionService(tenant)
 
     def generate_for_branch(self, branch: Branch) -> list[Recommendation]:
         """Generate recommendations for all active parts in a branch."""
@@ -171,6 +173,7 @@ class RecommendationGenerator:
             f"Class: {classification_label}."
         )
         recommendation.save()
+        self.source_resolution.resolve_sources(recommendation)
         return recommendation
 
     def _dc_velocity_for_part(self, part: Part, distribution_center: Branch) -> float:
@@ -353,11 +356,15 @@ class RecommendationGenerator:
             velocity=_to_decimal(velocity),
         )
 
+        self.source_resolution.resolve_sources(rec)
+
         logger.info(
             "recommendation.created",
             branch=branch.code,
             part=part.internal_sku_code,
             quantity=str(rec.quantity),
             pp=str(rec.punto_pedido),
+            source_type=rec.source_type,
+            is_partial=rec.is_partial,
         )
         return rec

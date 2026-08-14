@@ -13,12 +13,15 @@ class RecommendationAdmin(admin.ModelAdmin):
         "state",
         "quantity",
         "source_type",
+        "source_branch",
+        "is_partial",
+        "partial_gap",
         "current_stock",
         "punto_pedido",
         "created_at",
         "decided_at",
     )
-    list_filter = ("state", "source_type", "tenant", "branch")
+    list_filter = ("state", "source_type", "is_partial", "tenant", "branch")
     search_fields = ("part__internal_sku_code", "part__description", "explanation")
     readonly_fields = (
         "id",

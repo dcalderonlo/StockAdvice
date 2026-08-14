@@ -62,6 +62,23 @@ class Recommendation(TenantAwareModel):
         on_delete=models.SET_NULL,
         related_name="source_for_recommendations",
     )
+    is_partial = models.BooleanField(
+        default=False,
+        help_text="True when internal sources cannot cover the full recommended quantity.",
+    )
+    partial_gap = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        default=Decimal("0"),
+        help_text="Quantity still needed after allocating all available internal excess stock.",
+    )
+    source_breakdown = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="Multi-source allocation: list of {source_type, source_branch, quantity}.",
+    )
     current_stock = models.DecimalField(max_digits=12, decimal_places=2)
     punto_pedido = models.DecimalField(max_digits=12, decimal_places=2)
     planning_target = models.DecimalField(max_digits=12, decimal_places=2)
