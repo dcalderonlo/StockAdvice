@@ -484,31 +484,31 @@
 
 ### WU-06: Velocity Calculation Engine
 
-**T-017**: Weighted average velocity calculation  
-**Capability**: velocity-calculation  
-**Work unit**: WU-06  
-**Description**: Create VelocityService.calculate_velocity(branch_id, part_id) that computes weighted average of monthly sales (recent months weighted heavier). Use linear ramp 0.5→1.5 (from spike). Handle empty history (return 0.0, flag as cold-start). Handle shorter history (<12 months).  
-**Files affected**: `apps/inventory/services.py`  
-**Complexity**: M (1 day)  
-**Depends on**: T-015  
+**[x] T-017**: Weighted average velocity calculation
+**Capability**: velocity-calculation
+**Work unit**: WU-06
+**Description**: Create VelocityService.calculate_velocity(branch_id, part_id) that computes weighted average of monthly sales (recent months weighted heavier). Use linear ramp 0.5→1.5 (from spike). Handle empty history (return 0.0, flag as cold-start). Handle shorter history (<12 months).
+**Files affected**: `apps/catalog/services.py`
+**Complexity**: M (1 day)
+**Depends on**: T-015
 **Acceptance criteria**: Flat sales at X units/month returns X, rising trend produces weighted avg > simple mean, empty history returns 0.0
 
-**T-018**: Coverage days and projected demand  
-**Capability**: velocity-calculation  
-**Work unit**: WU-06  
-**Description**: Create VelocityService.calculate_coverage_days(branch_id, part_id) = 365 / Stock Turn Ratio (Ingresos Año-12 / Stock Promedio-12). Avoid division by zero (return 0.0). Create VelocityService.calculate_projected_demand(velocity, period_days) = velocity × (period_days / 30).  
-**Files affected**: `apps/inventory/services.py`  
-**Complexity**: S (0.5 day)  
-**Depends on**: T-017  
+**[x] T-018**: Coverage days and projected demand
+**Capability**: velocity-calculation
+**Work unit**: WU-06
+**Description**: Create VelocityService.calculate_coverage_days(branch_id, part_id) = 365 / Stock Turn Ratio (Ingresos Año-12 / Stock Promedio-12). Avoid division by zero (return 0.0). Create VelocityService.calculate_projected_demand(velocity, period_days) = velocity × (period_days / 30).
+**Files affected**: `apps/catalog/services.py`
+**Complexity**: S (0.5 day)
+**Depends on**: T-017
 **Acceptance criteria**: Coverage days avoids division by zero, projected demand matches formula
 
-**T-019**: DC velocity aggregation  
-**Capability**: velocity-calculation  
-**Work unit**: WU-06  
-**Description**: Create VelocityService.calculate_dc_velocity(dc_branch_id) = DC's own velocity + sum of dependent branch velocities. Query all branches with parent_branch_id = dc_branch_id. Handle DC with no dependents (return own velocity only).  
-**Files affected**: `apps/inventory/services.py`  
-**Complexity**: S (0.5 day)  
-**Depends on**: T-017, T-008  
+**[x] T-019**: DC velocity aggregation
+**Capability**: velocity-calculation
+**Work unit**: WU-06
+**Description**: Create VelocityService.calculate_dc_velocity(dc_branch_id) = DC's own velocity + sum of dependent branch velocities. Query all branches with parent_branch_id = dc_branch_id. Handle DC with no dependents (return own velocity only).
+**Files affected**: `apps/catalog/services.py`
+**Complexity**: S (0.5 day)
+**Depends on**: T-017, T-008
 **Acceptance criteria**: DC velocity = own + sum of dependents, DC with no dependents returns own velocity
 
 ### WU-07: Classification Engine
