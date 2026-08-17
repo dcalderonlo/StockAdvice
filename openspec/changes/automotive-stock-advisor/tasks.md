@@ -735,7 +735,7 @@
 
 ### WU-14: Notification Service
 
-**T-043**: Notification model and email templates  
+**[x] T-043**: Notification model and email templates  
 **Capability**: notification-service  
 **Work unit**: WU-14  
 **Description**: Create Notification model (id, user_id, notification_type, entity_type, entity_id, message, read_at, created_at). Create email templates: recommendation_pending, recommendation_escalated, partial_fulfillment, cold_start_flag, classification_review, dc_stock_critical. Use Django's email system + Anymail.  
@@ -744,7 +744,7 @@
 **Depends on**: T-027  
 **Acceptance criteria**: Notification model exists, email templates render correctly
 
-**T-044**: Notification dispatch service  
+**[x] T-044**: Notification dispatch service  
 **Capability**: notification-service  
 **Work unit**: WU-14  
 **Description**: Create NotificationService.send_notification(user_id, notification_type, entity_type, entity_id, message) that creates Notification and sends email. Create NotificationService.send_digest(branch_id, run_date) that batches all notifications for a run into one email. Retry failed emails (3 attempts).  
@@ -753,7 +753,7 @@
 **Depends on**: T-043  
 **Acceptance criteria**: Notification created and email sent, digest batches notifications, failed emails retried
 
-**T-045**: In-app notification creation  
+**[x] T-045**: In-app notification creation  
 **Capability**: notification-service  
 **Work unit**: WU-14  
 **Description**: Create NotificationService.create_in_app_notification(user_id, notification_type, entity_type, entity_id, message) that creates Notification without sending email. Call this for real-time in-app notifications (within 5 minutes of event).  
