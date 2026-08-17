@@ -706,29 +706,29 @@
 
 ### WU-13: Demand Override
 
-**T-040**: DemandOverride model  
+**[x] T-040**: DemandOverride model  
 **Capability**: demand-override  
 **Work unit**: WU-13  
 **Description**: Create DemandOverride model (id, part_id, branch_id, override_type [persistent/per_run/with_expiry], quantity, expires_at, created_by, created_at, status [active/expired]). Add unique constraint on (part_id, branch_id, status=active) — only one active override per SKU per branch.  
-**Files affected**: `apps/replenishment/models.py`, `apps/replenishment/migrations/`  
+**Files affected**: `apps/catalog/models.py`, `apps/catalog/migrations/`  
 **Complexity**: S (0.5 day)  
 **Depends on**: T-024  
 **Acceptance criteria**: DemandOverride model exists, only one active override per SKU per branch
 
-**T-041**: Override service with type selection  
+**[x] T-041**: Override service with type selection  
 **Capability**: demand-override  
 **Work unit**: WU-13  
 **Description**: Create DemandOverrideService.apply_override(part_id, branch_id, override_type, quantity, expires_at, user_id) that validates override_type, creates DemandOverride, logs in audit log. For with_expiry, validate expires_at is in the future. Reject negative quantity.  
-**Files affected**: `apps/replenishment/services.py`  
+**Files affected**: `apps/catalog/overrides.py`  
 **Complexity**: M (1 day)  
 **Depends on**: T-040  
 **Acceptance criteria**: Override applied with type selection, expires_at validated, negative quantity rejected
 
-**T-042**: Override expiration and calculation integration  
+**[x] T-042**: Override expiration and calculation integration  
 **Capability**: demand-override  
 **Work unit**: WU-13  
 **Description**: Create DemandOverrideService.expire_overrides() that marks overrides with expires_at < now as expired. Modify PlanningService.calculate_planning_target to check for active override and use overridden velocity instead of calculated velocity. Per-run overrides discarded after run completes.  
-**Files affected**: `apps/replenishment/services.py`  
+**Files affected**: `apps/catalog/overrides.py`, `apps/catalog/planning.py`  
 **Complexity**: M (1 day)  
 **Depends on**: T-041, T-024  
 **Acceptance criteria**: Expired overrides marked, planning target uses overridden velocity, per-run overrides discarded
