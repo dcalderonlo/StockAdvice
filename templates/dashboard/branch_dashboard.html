@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ branch.name|default:"Dashboard" }} ({{ kpis.branch_code|default:"tenant-wide" }})</h1>
+
+    <div class="row kpi-tiles" style="display: flex; gap: 1rem; margin: 1rem 0;">
+        <div class="kpi-tile" style="border: 1px solid #ccc; padding: 1rem; flex: 1;">
+            <h3 style="margin: 0;">{{ kpis.pending_recommendations|default:0 }}</h3>
+            <p style="margin: 0;">Pending Recommendations</p>
+        </div>
+        <div class="kpi-tile" style="border: 1px solid #ccc; padding: 1rem; flex: 1;">
+            <h3 style="margin: 0;">{{ kpis.total_stock_units|default:0|floatformat:0 }}</h3>
+            <p style="margin: 0;">Total Stock (units)</p>
+        </div>
+        <div class="kpi-tile" style="border: 1px solid #ccc; padding: 1rem; flex: 1;">
+            <h3 style="margin: 0;">{{ kpis.active_parts|default:0 }}</h3>
+            <p style="margin: 0;">Active Parts</p>
+        </div>
+        <div class="kpi-tile" style="border: 1px solid #ccc; padding: 1rem; flex: 1;">
+            <h3 style="margin: 0; color: orange;">{{ kpis.triggered_parts|default:0 }}</h3>
+            <p style="margin: 0;">Parts Below PP</p>
+        </div>
+    </div>
+
+    <h2>Pending Recommendations</h2>
+    <table class="table" border="1" cellpadding="5" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #eee;">
+                <th>SKU</th><th>Description</th><th>Branch</th><th>Quantity</th>
+                <th>Source</th><th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in pending_recommendations %}
+            <tr class="{% if r.is_partial %}alert alert-info{% endif %}">
+                <td>{{ r.part_code }}</td>
+                <td>{{ r.part_description }}</td>
+                <td>{{ r.branch_code }}</td>
+                <td>{{ r.quantity|floatformat:0 }}</td>
+                <td>{{ r.source_type }}{% if r.is_partial %} (partial){% endif %}</td>
+                <td>{{ r.created_at|slice:":10" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="text-align: center;">No pending recommendations</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Stock Health</h2>
+    <table class="table" border="1" cellpadding="5" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #eee;">
+                <th>SKU</th><th>Description</th><th>Stock</th><th>In Transit</th>
+                <th>Punto de Pedido</th><th>Quantity to Order</th><th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in stock_health %}
+            <tr style="{% if item.triggered %}background: #fff3cd;{% endif %}">
+                <td>{{ item.part_code }}</td>
+                <td>{{ item.part_description }}</td>
+                <td>{{ item.stock_disponible|floatformat:0 }}</td>
+                <td>{{ item.stock_en_transito|floatformat:0 }}</td>
+                <td>{{ item.punto_pedido|floatformat:1 }}</td>
+                <td>{{ item.cantidad_pedido|floatformat:0 }}</td>
+                <td>{% if item.triggered %}⚠ Triggered{% else %}✓ OK{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" style="text-align: center;">No stock data</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
