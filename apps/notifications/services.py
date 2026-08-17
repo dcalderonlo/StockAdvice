@@ -111,18 +111,33 @@ class NotificationService:
         related_object_type: str | None = None,
         related_object_id=None,
     ) -> list[Notification]:
-        """Send via both EMAIL and IN_APP channels."""
+        """Send via both EMAIL and IN_APP channels.
+
+        Email creation is throttled to one per (user, notification_type) per
+        hour so high-volume runs do not flood inboxes. The IN_APP record is
+        always created.
+        """
+        from .throttling import should_send_email_now
+
         results = []
-        results.append(
-            self.send_email_notification(
-                user,
-                notification_type,
-                subject,
-                body,
-                related_object_type,
-                related_object_id,
+        if should_send_email_now(notification_type, user):
+            results.append(
+                self.send_email_notification(
+                    user,
+                    notification_type,
+                    subject,
+                    body,
+                    related_object_type,
+                    related_object_id,
+                )
             )
-        )
+        else:
+            logger.info(
+                "notification.email_throttled",
+                user_id=str(user.id),
+                type=notification_type,
+            )
+
         results.append(
             self.send_in_app_notification(
                 user,

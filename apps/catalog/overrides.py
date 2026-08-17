@@ -127,6 +127,10 @@ class OverrideService:
             branch_id=str(branch.id) if branch else None,
             value=str(override_value),
         )
+
+        from apps.notifications.triggers import notify_override_created
+
+        notify_override_created(override)
         return override
 
     def get_active_override(
@@ -189,6 +193,12 @@ class OverrideService:
             expires_at__lt=today,
         )
         count = expired.count()
+
+        from apps.notifications.triggers import notify_override_expired
+
+        for expired_override in expired:
+            notify_override_expired(expired_override)
+
         expired.delete()
         logger.info("demand_override.cleanup", deleted=count)
         return count

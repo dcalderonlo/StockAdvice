@@ -21,6 +21,7 @@ from apps.core.models import Tenant
 from apps.inventory.models import StockLevel
 
 from .models import Recommendation
+from .permissions import is_cross_coordinator
 
 if TYPE_CHECKING:
     from apps.catalog.models import Part
@@ -101,6 +102,17 @@ class SourceResolutionService:
         recommendation.source_breakdown = source_breakdown
         recommendation.is_partial = is_partial
         recommendation.partial_gap = partial_gap
+
+        if is_partial:
+            from apps.notifications.triggers import notify_partial_fulfillment
+
+            notify_partial_fulfillment(recommendation)
+
+        if is_cross_coordinator(recommendation):
+            from apps.notifications.triggers import notify_cross_coordinator_pending
+
+            notify_cross_coordinator_pending(recommendation)
+
         recommendation.save()
 
         logger.info(
