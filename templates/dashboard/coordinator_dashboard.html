@@ -1,0 +1,69 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Coordinator Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<h1>Coordinator Dashboard</h1>
+<p>Welcome, {{ user.email }}. You see all branches in your scope.</p>
+
+<div class="row kpi-tiles" style="display: flex; gap: 1rem; margin: 1rem 0;">
+    <div class="kpi-tile" style="border: 1px solid #ccc; padding: 1rem; flex: 1;">
+        <h3 style="margin: 0;">{{ kpis.total_recommendations_pending|default:0 }}</h3>
+        <p style="margin: 0;">Pending Recommendations (All Branches)</p>
+    </div>
+    <div class="kpi-tile" style="border: 1px solid #ccc; padding: 1rem; flex: 1;">
+        <h3 style="margin: 0;">{{ kpis.total_recommendations_approved|default:0 }}</h3>
+        <p style="margin: 0;">Approved</p>
+    </div>
+    <div class="kpi-tile" style="border: 1px solid #ccc; padding: 1rem; flex: 1;">
+        <h3 style="margin: 0;">{{ kpis.total_recommendations_partial|default:0 }}</h3>
+        <p style="margin: 0;">Partial Fulfillment</p>
+    </div>
+</div>
+
+<h2>Your Branches ({{ accessible_branches|length }})</h2>
+<table class="table" border="1" cellpadding="5" style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background: #eee;">
+            <th>Code</th><th>Name</th><th>Type</th><th>Manager</th><th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for b in accessible_branches %}
+        <tr>
+            <td>{{ b.code }}</td>
+            <td>{{ b.name }}</td>
+            <td>{{ b.get_type_display }}</td>
+            <td>{{ b.manager.email|default:"—" }}</td>
+            <td><a href="{% url 'dashboard:branch-dashboard-branch' b.code %}" class="btn">View</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align: center;">No branches assigned</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Pending Recommendations (All Your Branches)</h2>
+<table class="table" border="1" cellpadding="5" style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background: #eee;">
+            <th>SKU</th><th>Description</th><th>Branch</th><th>Quantity</th><th>Source</th><th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in pending_recommendations %}
+        {% if r.branch_code in branches_codes %}
+        <tr>
+            <td>{{ r.part_code }}</td>
+            <td>{{ r.part_description }}</td>
+            <td>{{ r.branch_code }}</td>
+            <td>{{ r.quantity|floatformat:0 }}</td>
+            <td>{{ r.source_type }}</td>
+            <td>{{ r.created_at|slice:":10" }}</td>
+        </tr>
+        {% endif %}
+        {% empty %}
+        <tr><td colspan="6" style="text-align: center;">No pending recommendations</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
