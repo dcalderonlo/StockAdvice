@@ -390,6 +390,10 @@ class RecommendationGenerator:
         self.source_resolution.resolve_sources(rec)
         self.escalation_service.check_and_escalate(rec)
 
+        from apps.notifications.triggers import notify_new_recommendation
+
+        notify_new_recommendation(rec)
+
         logger.info(
             "recommendation.created",
             branch=branch.code,
@@ -443,6 +447,16 @@ class ApprovalService:
         before_state = recommendation.state
 
         rec = transition_recommendation(recommendation, target_state, user, notes)
+
+        from apps.notifications.triggers import notify_decided
+
+        decision_map = {
+            "approve": "approved",
+            "reject": "rejected",
+            "handle": "handled",
+            "mark_ordered": "ordered",
+        }
+        notify_decided(rec, user, decision_map[action])
 
         AuditLog.objects.create(
             tenant=self.tenant,

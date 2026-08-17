@@ -144,6 +144,10 @@ class EscalationService:
             },
         )
 
+        from apps.notifications.triggers import notify_escalated
+
+        notify_escalated(recommendation, previous_level, level)
+
         logger.info(
             "recommendation.escalated",
             recommendation_id=str(recommendation.id),
