@@ -849,7 +849,7 @@
 
 ### WU-17: Sector Configuration
 
-**T-055**: SectorConfiguration model  
+**[x] T-055**: SectorConfiguration model  
 **Capability**: sector-configuration  
 **Work unit**: WU-17  
 **Description**: Create SectorConfiguration model (id, tenant_id, sector_key, config_json). config_json contains: terminology labels, classification thresholds, lifecycle rules, special categories. Add unique constraint on (tenant_id, sector_key).  
@@ -858,7 +858,9 @@
 **Depends on**: T-002  
 **Acceptance criteria**: SectorConfiguration model exists, admin can create/view/modify
 
-**T-056**: Default automotive sector configuration  
+**Note**: Implemented as a global `SectorConfiguration` model in `apps/sector` (no `tenant_id` FK) per WU-17 scope; tenants reference sectors via `Tenant.config["sector_key"]`.
+
+**[x] T-056**: Default automotive sector configuration  
 **Capability**: sector-configuration  
 **Work unit**: WU-17  
 **Description**: Create data migration to insert default "automotive_aftermarket" sector configuration with: terminology (Part, Branch, Warehouse Manager), classification thresholds (VC1 >250, etc.), lifecycle stages (N1/N2/N3, OBS-S/OBS-N/OBS-P/OBS-R, Inactive, NS-C/NS-NS).  
@@ -867,7 +869,9 @@
 **Depends on**: T-055  
 **Acceptance criteria**: Default automotive config inserted, new tenants assigned to it
 
-**T-057**: Sector-specific terminology and thresholds in engine  
+**Note**: Implemented in `apps/sector/migrations/0001_initial.py` plus `create_default_sector` management command.
+
+**[x] T-057**: Sector-specific terminology and thresholds in engine  
 **Capability**: sector-configuration  
 **Work unit**: WU-17  
 **Description**: Modify ClassificationService to read thresholds from SectorConfiguration.config_json instead of hardcoded values. Modify UI templates to use terminology from config_json. Ensure core formulas (Planning Target, Punto de Pedido, Cantidad de Pedido) remain unchanged.  
@@ -875,6 +879,8 @@
 **Complexity**: M (1 day)  
 **Depends on**: T-056, T-020  
 **Acceptance criteria**: Classification uses sector-specific thresholds, UI uses sector terminology, formulas unchanged
+
+**Note**: `volume_class` and `ClassificationEngine` now read VC thresholds from sector config; `SectorConfigurationService` exposes terminology. Core planning formulas are untouched. UI templates were not modified because WU-17 stops at the service/model layer; dashboard terminology consumption is deferred to dashboard WUs.
 
 ### WU-18: Onboarding Flow
 

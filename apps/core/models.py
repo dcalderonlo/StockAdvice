@@ -53,6 +53,22 @@ class Tenant(models.Model):
             self.slug = slugify(self.name) or str(self.id)[:8]
         super().save(*args, **kwargs)
 
+    def get_sector_config(self):
+        """Return the SectorConfiguration for this tenant.
+
+        Reads ``sector_key`` from ``config`` (default: ``automotive_aftermarket``).
+        Falls back to the default sector if the configured sector is missing.
+        Returns ``None`` only when no sectors exist at all.
+        """
+        from apps.sector.models import SectorConfiguration
+
+        config = self.config or {} if isinstance(self.config, dict) else {}
+        sector_key = config.get("sector_key", "automotive_aftermarket")
+        try:
+            return SectorConfiguration.objects.get(sector_key=sector_key)
+        except SectorConfiguration.DoesNotExist:
+            return SectorConfiguration.objects.default()
+
 
 class TenantAwareModel(models.Model):
     """Abstract base class that links every row to a tenant."""
