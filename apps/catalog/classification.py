@@ -27,14 +27,18 @@ if TYPE_CHECKING:
 logger = structlog.get_logger(__name__)
 
 
-def volume_class(annual_sales: int) -> str:
+def volume_class(annual_sales: int, sector_config=None) -> str:
     """Volume Class (VC1–VC8) based on annual sales volume.
 
-    Thresholds from the Phase 0 spike / proposal §6:
+    When ``sector_config`` is provided, the label is resolved from the sector's
+    configured VC thresholds. Otherwise, the hardcoded Phase 0 spike / proposal
+    thresholds are used:
       VC1 > 250, VC2 121–250, VC3 61–120, VC4 31–60,
       VC5 15–30, VC6 7–14, VC7 4–6, VC8 1–3.
     Zero annual sales return an empty string (cold-start).
     """
+    if sector_config is not None:
+        return sector_config.get_vc_label(annual_sales)
     if annual_sales >= 251:
         return "VC1"
     if annual_sales >= 121:
@@ -54,6 +58,35 @@ def volume_class(annual_sales: int) -> str:
     return ""
 
 
+def lifecycle_stage(
+    months_since_first_seen: int | None = None,
+    months_since_last_sale: int | None = None,
+    has_stock: bool = False,
+    sector_config=None,
+) -> str:
+    """Return a lifecycle stage code based on age and sales history.
+
+    When ``sector_config`` is provided, the rules are read from the sector's
+    configured lifecycle stages. Otherwise, the hardcoded default automotive
+    rules are used.
+    """
+    if sector_config is not None:
+        return sector_config.get_lifecycle_stage(
+            months_since_first_seen=months_since_first_seen,
+            months_since_last_sale=months_since_last_sale,
+            has_stock=has_stock,
+        )
+
+    # Hardcoded automotive fallback (matches default sector configuration).
+    if months_since_last_sale is not None and months_since_last_sale >= 24:
+        return "OBSOLETE"
+    if months_since_last_sale is not None and months_since_last_sale >= 12:
+        return "PRE_OBSOLETE" if has_stock else "INACTIVE"
+    if months_since_first_seen is not None and months_since_first_seen <= 6:
+        return "NEW"
+    return "ACTIVE"
+
+
 def new_subtype(first_six_month_sales: int) -> str:
     """New-part sub-code based on sales in the first six months.
 
@@ -69,9 +102,25 @@ def new_subtype(first_six_month_sales: int) -> str:
 class ClassificationEngine:
     """Derives Volume Class and Lifecycle Stage for parts in a tenant."""
 
-    def __init__(self, tenant: Tenant, today: date | None = None):
+    def __init__(
+        self,
+        tenant: Tenant,
+        today: date | None = None,
+        sector_config=None,
+    ):
         self.tenant = tenant
         self.today = today or date.today()
+        self.sector_config = sector_config
+
+    def _get_sector_config(self):
+        """Return the sector configuration to use for classification.
+
+        Caches the lookup on the engine instance so repeated calls within a
+        classification pass use the same configuration snapshot.
+        """
+        if self.sector_config is None:
+            self.sector_config = self.tenant.get_sector_config()
+        return self.sector_config
 
     def _sale_movements(
         self, part: Part, branch: "Branch | None" = None
@@ -208,7 +257,7 @@ class ClassificationEngine:
             LifecycleStage.SPECIAL_CAMPAIGN,
             LifecycleStage.SPECIAL_NON_STOCK,
         ):
-            vc = volume_class(annual_sales)
+            vc = volume_class(annual_sales, sector_config=self._get_sector_config())
 
         result, _ = ClassificationResult.objects.update_or_create(
             tenant=self.tenant,

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "apps.notifications",
     "apps.recommendations",
     "apps.dashboard",
+    "apps.sector",
 ]
 
 MIDDLEWARE = [
