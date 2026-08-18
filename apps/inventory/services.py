@@ -120,42 +120,61 @@ class InventoryIngestionService:
             )
             raise
 
-        branch = Branch.objects.get(tenant=self.tenant, code=branch_code)
+        return self.import_sales({branch_code: sales_data})
+
+    def import_sales(self, sales_data: dict[str, dict[str, list[float]]]) -> int:
+        """Record SALE movements from raw DMS sales data.
+
+        ``sales_data`` maps branch code -> SKU -> list of monthly sales (most
+        recent first). Parts and branches are matched within the tenant.
+        Returns the number of movements recorded.
+        """
         today = date.today()
         recorded = 0
 
-        for sku, monthly_sales in sales_data.items():
+        for branch_code, sku_sales in sales_data.items():
             try:
-                part = Part.objects.get(tenant=self.tenant, internal_sku_code=sku)
-            except Part.DoesNotExist:
+                branch = Branch.objects.get(tenant=self.tenant, code=branch_code)
+            except Branch.DoesNotExist:
                 logger.warning(
-                    "ingestion.sales.sku_not_found",
-                    sku=sku,
+                    "ingestion.sales.branch_not_found",
                     branch=branch_code,
                 )
                 continue
 
-            # Monthly sales are returned most recent first. Walk backwards from
-            # today so each list index maps to a concrete month.
-            for i, qty in enumerate(monthly_sales):
-                movement_date = today - timedelta(days=30 * i)
-                qty_decimal = Decimal(str(qty))
-                if qty_decimal == 0:
+            for sku, monthly_sales in sku_sales.items():
+                try:
+                    part = Part.objects.get(tenant=self.tenant, internal_sku_code=sku)
+                except Part.DoesNotExist:
+                    logger.warning(
+                        "ingestion.sales.sku_not_found",
+                        sku=sku,
+                        branch=branch_code,
+                    )
                     continue
 
-                self.record_movement_from_sale(
-                    branch=branch,
-                    part=part,
-                    quantity=-qty_decimal,
-                    movement_date=movement_date,
-                )
-                recorded += 1
+                # Monthly sales are returned most recent first. Walk backwards
+                # from today so each list index maps to a concrete month.
+                for i, qty in enumerate(monthly_sales):
+                    movement_date = today - timedelta(days=30 * i)
+                    qty_decimal = Decimal(str(qty))
+                    if qty_decimal == 0:
+                        continue
 
-        logger.info(
-            "ingestion.sales.done",
-            branch=branch_code,
-            recorded=recorded,
-        )
+                    self.record_movement_from_sale(
+                        branch=branch,
+                        part=part,
+                        quantity=-qty_decimal,
+                        movement_date=movement_date,
+                    )
+                    recorded += 1
+
+            logger.info(
+                "ingestion.sales.done",
+                branch=branch_code,
+                recorded=recorded,
+            )
+
         return recorded
 
     def sync_purchase_orders(self, branch_code: str) -> None:

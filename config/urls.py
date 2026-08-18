@@ -14,5 +14,6 @@ urlpatterns = [
     path("accounts/password-change/done/", auth_views.PasswordChangeDoneView.as_view(), name="password_change_done"),
     path("accounts/", include("apps.accounts.urls")),
     path("accounts/allauth/", include("allauth.urls")),
+    path("onboarding/", include("apps.onboarding.urls")),
     path("", include("apps.dashboard.urls")),
 ]

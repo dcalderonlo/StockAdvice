@@ -1,0 +1,68 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<div class="container">
+  <h1>Onboarding</h1>
+
+  {% if is_overdue %}
+    <article class="pico-background-red-500">
+      <strong>Onboarding is overdue.</strong> Target completion is within 28 days of kickoff.
+    </article>
+  {% endif %}
+
+  <p>Current status: <strong>{{ state.get_status_display }}</strong></p>
+
+  <ol>
+    {% for label, complete in checklist %}
+      <li>
+        {% if complete %}
+          <span aria-label="completed">✅</span> {{ label }}
+        {% else %}
+          <span aria-label="pending">⬜</span> {{ label }}
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+
+  <div class="grid">
+    <form action="{% url 'onboarding:test-dms' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" {% if state.status != 'dms_connecting' and state.status != 'not_started' %}disabled{% endif %}>
+        Test DMS connection
+      </button>
+    </form>
+
+    <form action="{% url 'onboarding:backfill' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" {% if state.status != 'dms_connected' %}disabled{% endif %}>
+        Backfill sales
+      </button>
+    </form>
+
+    <form action="{% url 'onboarding:test-run' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" {% if state.status != 'backfill_complete' and state.status != 'manager_assigning' %}disabled{% endif %}>
+        Run test recommendation
+      </button>
+    </form>
+  </div>
+
+  {% if state.dms_test_status %}
+    <p>DMS test status: <code>{{ state.dms_test_status }}</code></p>
+  {% endif %}
+
+  {% if state.sales_backfilled_until %}
+    <p>Sales backfilled until: {{ state.sales_backfilled_until }}</p>
+    <p>Movements imported: {{ state.sales_backfill_count }}</p>
+  {% endif %}
+
+  {% if state.test_run_completed_at %}
+    <p>Test run completed at: {{ state.test_run_completed_at }}</p>
+    <p>Recommendations generated: {{ state.test_run_recommendations_count }}</p>
+  {% endif %}
+
+  {% if state.go_live_at %}
+    <p>Go-live at: {{ state.go_live_at }}</p>
+  {% endif %}
+</div>
+{% endblock %}
