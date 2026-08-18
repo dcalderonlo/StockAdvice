@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     "apps.dashboard",
     "apps.sector",
     "apps.onboarding",
+    "apps.scheduling",
+    "django_q",
 ]
 
 MIDDLEWARE = [
@@ -154,3 +156,19 @@ structlog.configure(
     wrapper_class=structlog.stdlib.BoundLogger,
     cache_logger_on_first_use=True,
 )
+
+# Django-Q2 task queue configuration.
+# DB-backed broker for local dev; Redis when REDIS_URL is provided.
+Q_CLUSTER = {
+    "name": "stockadvice-cluster",
+    "workers": 4,
+    "timeout": 60 * 30,  # 30 minutes
+    "retry": 60 * 35,  # must be > timeout; ~5 min after timeout before requeue
+    "max_attempts": 3,  # 3 attempts total
+    "save_limit": 250,
+    "orm": "default",  # use Django ORM as broker for dev
+}
+
+if os.environ.get("REDIS_URL"):
+    Q_CLUSTER["redis"] = os.environ["REDIS_URL"]
+    Q_CLUSTER["orm"] = None

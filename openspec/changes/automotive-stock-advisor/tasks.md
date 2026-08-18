@@ -884,7 +884,7 @@
 
 ### WU-18: Onboarding Flow
 
-**T-058**: Onboarding checklist model and view  
+**[x] T-058**: Onboarding checklist model and view  
 **Capability**: onboarding  
 **Work unit**: WU-18  
 **Description**: Create OnboardingChecklist model (id, branch_id, dms_connected, sales_backfilled, manager_assigned, test_run_completed, go_live_at). Create OnboardingView that displays checklist with progress (checkmarks for completed steps, highlight current step).  
@@ -893,7 +893,7 @@
 **Depends on**: T-008  
 **Acceptance criteria**: Checklist displays progress, steps marked complete, current step highlighted
 
-**T-059**: DMS connection validation  
+**[x] T-059**: DMS connection validation  
 **Capability**: onboarding  
 **Work unit**: WU-18  
 **Description**: Create OnboardingService.validate_dms_connection(branch_id, adapter_config) that tests connection, validates required tables/views accessible, reports missing data sources. Mark dms_connected = True if successful. Block next step if validation fails.  
@@ -902,7 +902,7 @@
 **Depends on**: T-058, T-011  
 **Acceptance criteria**: DMS connection validated, missing tables reported, next step blocked if fails
 
-**T-060**: Sales backfill and manager assignment  
+**[x] T-060**: Sales backfill and manager assignment  
 **Capability**: onboarding  
 **Work unit**: WU-18  
 **Description**: Create OnboardingService.backfill_sales(branch_id) that imports 12+ months of sales history. Warn if <12 months but do not block. Create OnboardingService.assign_branch_manager(branch_id, user_id) that links manager to branch. Mark sales_backfilled and manager_assigned = True.  
@@ -911,10 +911,10 @@
 **Depends on**: T-059, T-016  
 **Acceptance criteria**: Sales backfilled (12+ months), manager assigned, checklist updated
 
-**T-061**: First test run and go-live  
+**[x] T-061**: First test run and go-live  
 **Capability**: onboarding  
 **Work unit**: WU-18  
-**Description**: Create OnboardingService.run_first_test(branch_id) that validates end-to-end flow: catalog read → velocity → classification → Planning Target → recommendations. Display results in dashboard. Block if manager not assigned. Mark test_run_completed = True. Add "Go Live" button that sets go_live_at and enables scheduled runs.  
+**Description**: Create OnboardingService.run_first_test(branch_id) that validates end-to-end flow: catalog read -> velocity -> classification -> Planning Target -> recommendations. Display results in dashboard. Block if manager not assigned. Mark test_run_completed = True. Add "Go Live" button that sets go_live_at and enables scheduled runs.  
 **Files affected**: `apps/onboarding/services.py`, `templates/onboarding/checklist.html`  
 **Complexity**: M (1.5 days)  
 **Depends on**: T-060, T-027  
@@ -922,7 +922,7 @@
 
 ### WU-19: Scheduling & Background Jobs
 
-**T-062**: Django-Q2 configuration  
+**[x] T-062**: Django-Q2 configuration  
 **Capability**: operations  
 **Work unit**: WU-19  
 **Description**: Add django-q2 to requirements. Configure in settings.py: Q_CLUSTER with ORM broker for dev, Redis for prod. Set workers, timeout, retry. Create `python manage.py qcluster` command for worker process.  
@@ -931,7 +931,7 @@
 **Depends on**: T-001  
 **Acceptance criteria**: Django-Q2 configured, worker process starts
 
-**T-063**: Replenishment run scheduled job  
+**[x] T-063**: Replenishment run scheduled job  
 **Capability**: operations  
 **Work unit**: WU-19  
 **Description**: Create replenishment_run job that calls RecommendationService.generate_recommendations(branch_id, run_date). Schedule per branch via Django-Q2 Schedule model (weekly by default, configurable cron). Add idempotency key (branch_id, run_date).  
@@ -940,7 +940,7 @@
 **Depends on**: T-062, T-027  
 **Acceptance criteria**: Replenishment run scheduled per branch, idempotent, runs weekly
 
-**T-064**: Classification pass scheduled job  
+**[x] T-064**: Classification pass scheduled job  
 **Capability**: operations  
 **Work unit**: WU-19  
 **Description**: Create classification_pass job that calls ClassificationService.classify_all(tenant_id). Schedule monthly via Django-Q2 (cron 0 3 1 * *). Add idempotency key (tenant_id, month_key).  
@@ -949,7 +949,7 @@
 **Depends on**: T-062, T-020  
 **Acceptance criteria**: Classification pass scheduled monthly, idempotent
 
-**T-065**: Notification dispatch and retry  
+**[x] T-065**: Notification dispatch and retry  
 **Capability**: operations  
 **Work unit**: WU-19  
 **Description**: Create notification_dispatch job that runs every 15 minutes, processes pending Notification records, sends emails. Retry failed emails (3 attempts, 5min delay). Log dead tasks.  
