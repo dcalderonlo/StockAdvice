@@ -3,7 +3,6 @@ from __future__ import annotations
 from uuid import uuid4
 
 import pytest
-from django.core import mail
 
 from apps.core.tests.factories import TenantFactory
 

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from django.utils import timezone
 
 from .models import EmailVerification, Invitation, PasswordReset
 

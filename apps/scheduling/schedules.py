@@ -7,12 +7,6 @@ from django_q.models import Schedule
 from apps.branches.models import Branch
 from apps.core.models import Tenant
 
-from .jobs import (
-    scheduled_classification_pass,
-    scheduled_notification_dispatch,
-    scheduled_override_cleanup,
-    scheduled_replenishment_run,
-)
 
 
 def setup_default_schedules(tenant: Tenant) -> None:

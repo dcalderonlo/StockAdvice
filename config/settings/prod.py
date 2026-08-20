@@ -10,7 +10,7 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])  # type: ignore[name-defin
 DATABASES["default"] = env.db()  # type: ignore[name-defined]  # noqa: F405
 
 # Security hardening
-SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
+SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)  # type: ignore[name-defined]  # noqa: F405
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
@@ -24,4 +24,4 @@ EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")  # type: ignore[name-define
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")  # type: ignore[name-defined]  # noqa: F405
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@example.com")  # type: ignore[name-defined]  # noqa: F405
 
-LOGGING["root"]["level"] = "INFO"  # type: ignore[index]
+LOGGING["root"]["level"] = "INFO"  # type: ignore[index]  # noqa: F405

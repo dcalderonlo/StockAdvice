@@ -9,7 +9,7 @@ from django.utils import timezone
 from apps.core.tests.factories import TenantFactory
 
 from .. import services
-from ..models import EmailVerification, User
+from ..models import User
 from ..tokens import TokenExpired
 
 

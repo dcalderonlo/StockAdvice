@@ -8,8 +8,6 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from apps.accounts.models import Role
-from apps.branches.models import Branch
-from apps.core.models import Tenant
 
 from .services import OnboardingService
 
@@ -74,8 +72,7 @@ def test_dms(request):
         return HttpResponseForbidden("Admin or gerente required")
 
     service = OnboardingService(tenant)
-    ok = service.test_dms_connection()
-    # Stay on status page; future work can add messages framework feedback.
+    service.test_dms_connection()  # triggered for side effects; future work: show feedback
     return redirect(reverse("onboarding:status"))
 
 

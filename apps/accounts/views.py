@@ -6,7 +6,6 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
 
 from . import services
 from .forms import (
@@ -15,7 +14,7 @@ from .forms import (
     PasswordResetConfirmForm,
     PasswordResetRequestForm,
 )
-from .models import Invitation, User
+from .models import Invitation
 from .permissions import get_branch_scope, get_user_roles, require_any_role
 from .tokens import TokenError, TokenExpired, TokenUsed, get_valid_invitation, get_valid_password_reset
 

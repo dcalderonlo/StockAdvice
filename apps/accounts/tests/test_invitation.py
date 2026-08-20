@@ -4,7 +4,6 @@ from datetime import timedelta
 from uuid import uuid4
 
 import pytest
-from django.test import RequestFactory
 from django.utils import timezone
 
 from apps.core.tests.factories import TenantFactory

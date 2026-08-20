@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import wraps
-from typing import Callable, Set
+from typing import Callable
 from uuid import UUID
 
 from django.core.exceptions import PermissionDenied
@@ -11,7 +11,7 @@ from django.http import HttpRequest
 
 from apps.core.models import AuditLog
 
-from .models import Role, User, UserRole
+from .models import Role, User
 
 
 class RoleNames:
