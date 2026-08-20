@@ -42,6 +42,24 @@ services:
     networks:
       - stockadvice
 
+  worker:
+    build: .
+    command: python manage.py qcluster
+    volumes:
+      - .:/app
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+      DATABASE_URL: postgres://stockadvice:stockadvice@db:5432/stockadvice
+      REDIS_URL: redis://redis:6379/0
+      DJANGO_DEBUG: "True"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - stockadvice
+
 volumes:
   postgres_data:
 

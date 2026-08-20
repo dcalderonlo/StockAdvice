@@ -960,7 +960,7 @@
 
 ### WU-20: Operations — Deployment, Logging, Health
 
-**T-066**: Dockerfile and docker-compose.yml  
+**[x] T-066**: Dockerfile and docker-compose.yml  
 **Capability**: operations  
 **Work unit**: WU-20  
 **Description**: Create multi-stage Dockerfile (python:3.12-slim, gunicorn + whitenoise for static). Create docker-compose.yml with services: app (web), worker (qcluster), db (postgres:16), redis. Add .dockerignore.  
@@ -969,7 +969,7 @@
 **Depends on**: T-001  
 **Acceptance criteria**: `docker-compose up` starts all services, app accessible on localhost
 
-**T-067**: Structured logging with structlog  
+**[x] T-067**: Structured logging with structlog  
 **Capability**: operations  
 **Work unit**: WU-20  
 **Description**: Add structlog to requirements. Configure in settings.py to output JSON to stdout. Add middleware to inject request_id, user_id, branch_id into log context. Log request_completed, unhandled_exception, job_started events.  
@@ -978,7 +978,7 @@
 **Depends on**: T-001  
 **Acceptance criteria**: JSON logs to stdout with timestamp, level, event, request_id, user_id, branch_id
 
-**T-068**: Health check endpoint  
+**[x] T-068**: Health check endpoint  
 **Capability**: operations  
 **Work unit**: WU-20  
 **Description**: Create /health/ endpoint that checks: web service (always OK), database connection (SELECT 1), task queue (ping Redis or DB). Return HTTP 200 with {"web": "ok", "db": "ok", "queue": "ok"} or HTTP 503 if any component fails.  
@@ -987,7 +987,7 @@
 **Depends on**: T-001  
 **Acceptance criteria**: Health check returns 200 when healthy, 503 when db or queue down
 
-**T-069**: Sentry integration (optional)  
+**[x] T-069**: Sentry integration (optional)  
 **Capability**: operations  
 **Work unit**: WU-20  
 **Description**: Add sentry-sdk to requirements. Configure in settings.py if SENTRY_DSN env var set. Capture unhandled exceptions with stack trace, user context, request data. If not set, log to stdout only.  
@@ -996,7 +996,7 @@
 **Depends on**: T-067  
 **Acceptance criteria**: Sentry active when SENTRY_DSN set, errors reported with context
 
-**T-070**: CI/CD pipeline (GitHub Actions)  
+**[ ] T-070**: CI/CD pipeline (GitHub Actions)  
 **Capability**: operations  
 **Work unit**: WU-20  
 **Description**: Create .github/workflows/ci.yml that runs on push to main: ruff lint, pytest, Docker build, push to registry. Render auto-deploys on push. Fail pipeline if lint or tests fail.  
