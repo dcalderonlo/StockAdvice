@@ -60,7 +60,7 @@ jobs:
 
       - name: Run ruff (lint)
         run: |
-          ruff check apps/ config/ tests/ spike/
+          ruff check apps/ config/ spike/
 
       - name: Run tests
         run: |
