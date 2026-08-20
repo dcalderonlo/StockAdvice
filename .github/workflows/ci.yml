@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: stockadvice
+          POSTGRES_PASSWORD: stockadvice
+          POSTGRES_DB: stockadvice_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready -U stockadvice
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://stockadvice:stockadvice@localhost:5432/stockadvice_test
+      REDIS_URL: redis://localhost:6379/0
+      DJANGO_SETTINGS_MODULE: config.settings.test
+      DJANGO_SECRET_KEY: test-secret-key-for-ci-only
+      DEFAULT_TENANT_SLUG: default
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+          pip install ruff
+
+      - name: Run ruff (lint)
+        run: |
+          ruff check apps/ config/ tests/ spike/
+
+      - name: Run tests
+        run: |
+          python -m pytest -v --tb=short
+        env:
+          CI: "true"
+
+      - name: Build check (no actual run)
+        run: |
+          python manage.py check --settings=config.settings.test
