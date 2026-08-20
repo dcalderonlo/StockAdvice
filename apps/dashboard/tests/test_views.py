@@ -117,7 +117,7 @@ def test_get_accessible_branches_coordinator():
     tenant = MagicMock()
     with patch("apps.dashboard.views.Branch.objects") as mock_qs:
         mock_qs.filter.return_value.filter.return_value = MagicMock()
-        result = _get_accessible_branches(user, tenant)
+        _get_accessible_branches(user, tenant)
         mock_qs.filter.assert_called_with(tenant=tenant, is_active=True)
         mock_qs.filter.return_value.filter.assert_called_with(coordinator_id=42)
 

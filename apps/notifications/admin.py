@@ -2,7 +2,6 @@
 
 from django.contrib import admin
 
-from .enums import NotificationChannel, NotificationType
 from .models import Notification
 
 

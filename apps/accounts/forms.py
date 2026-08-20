@@ -3,11 +3,9 @@
 from __future__ import annotations
 
 from django import forms
-from django.contrib.auth.forms import PasswordChangeForm
 from django.core.exceptions import ValidationError
 
 from .models import Invitation, Role, User
-from .permissions import RoleNames
 
 
 class InvitationForm(forms.ModelForm):

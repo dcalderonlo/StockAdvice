@@ -7,7 +7,6 @@ from decimal import Decimal
 
 import pytest
 
-from apps.catalog.models import Part
 from apps.inventory.models import StockEnTransito, StockLevel, StockMovement
 from apps.inventory.services import InventoryIngestionService
 

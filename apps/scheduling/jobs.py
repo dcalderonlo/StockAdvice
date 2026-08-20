@@ -19,7 +19,7 @@ from apps.recommendations.services import RecommendationGenerator
 from .models import ScheduledRun
 
 if TYPE_CHECKING:
-    from apps.notifications.models import Notification
+    pass
 
 logger = structlog.get_logger(__name__)
 

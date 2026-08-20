@@ -11,7 +11,6 @@ from apps.branches.models import BranchType
 from apps.catalog.models import Part
 from apps.catalog.planning import PlanningCalculator, PlanningResult
 from apps.catalog.services import VelocityCalculator
-from apps.core.models import Tenant
 from apps.core.tests.factories import TenantFactory
 from apps.inventory.models import StockLevel, StockMovement, StockMovementType
 from apps.inventory.tests.factories import BranchFactory, PartFactory
