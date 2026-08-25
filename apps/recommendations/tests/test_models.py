@@ -2,20 +2,18 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
 
 import pytest
-from django.utils import timezone
 
 from apps.accounts.models import User
-from apps.branches.models import BranchType
 from apps.core.tests.factories import TenantFactory
 from apps.inventory.models import StockMovement, StockMovementType
 from apps.inventory.tests.factories import BranchFactory, PartFactory
 
 from ..enums import RecommendationState
-from ..models import AlreadyDecidedError, InvalidTransitionError, Recommendation
+from ..models import InvalidTransitionError, Recommendation
 
 
 def create_sales(tenant, branch, part, quantities: list[float], today: date | None = None):

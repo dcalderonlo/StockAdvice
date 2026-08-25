@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from apps.accounts.models import User
 
-from .enums import NotificationChannel, NotificationType
+from .enums import NotificationChannel
 from .models import Notification
 
 if TYPE_CHECKING:

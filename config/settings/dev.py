@@ -7,8 +7,8 @@ from .base import *  # noqa: F403
 DEBUG = True
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
-DATABASES["default"]["OPTIONS"] = {"timeout": 20}  # type: ignore[index]
+DATABASES["default"]["OPTIONS"] = {"timeout": 20}  # type: ignore[index]  # noqa: F405
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-LOGGING["root"]["level"] = "DEBUG"  # type: ignore[index]
+LOGGING["root"]["level"] = "DEBUG"  # type: ignore[index]  # noqa: F405

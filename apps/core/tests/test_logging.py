@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import logging
 
-import pytest
 import structlog.contextvars
 from pythonjsonlogger.jsonlogger import JsonFormatter
 

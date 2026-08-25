@@ -1,5 +1,4 @@
 """Tests for the dashboard aggregator (simple unit tests, no DB)."""
-from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
 from apps.dashboard.services import DashboardAggregator

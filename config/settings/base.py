@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 
 import environ
-import structlog
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 

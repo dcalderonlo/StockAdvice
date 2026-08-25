@@ -8,8 +8,7 @@ from decimal import Decimal
 import pytest
 
 from apps.accounts.models import Role, User, UserRole
-from apps.branches.models import Branch, BranchType
-from apps.catalog.models import Part
+from apps.branches.models import Branch
 from apps.core.tests.factories import TenantFactory
 from apps.inventory.models import StockLevel, StockMovement, StockMovementType
 from apps.inventory.tests.factories import BranchFactory, PartFactory

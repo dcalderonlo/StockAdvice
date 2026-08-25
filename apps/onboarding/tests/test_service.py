@@ -5,8 +5,6 @@ from datetime import date, timedelta
 import pytest
 
 from apps.accounts.models import Role, User, UserRole
-from apps.branches.models import Branch
-from apps.catalog.models import Part
 from apps.core.tests.factories import TenantFactory
 from apps.inventory.services import InventoryIngestionService
 from apps.inventory.tests.factories import BranchFactory, PartFactory

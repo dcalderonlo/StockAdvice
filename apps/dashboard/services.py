@@ -7,9 +7,7 @@ from typing import Optional
 
 from django.db import models
 
-from apps.accounts.models import User
 from apps.branches.models import Branch
-from apps.catalog.models import Part
 from apps.core.models import Tenant
 from apps.inventory.models import StockLevel
 from apps.recommendations.models import Recommendation, RecommendationState

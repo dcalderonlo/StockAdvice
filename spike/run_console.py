@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-from stockadvice_spike.entities import Recommendation
 from stockadvice_spike.fixtures.sample_data import (
     BRANCH_CONFIG,
     get_parts,

@@ -9,7 +9,6 @@ import pytest
 from django.utils import timezone
 
 from apps.branches.models import BranchType
-from apps.catalog.models import LifecycleStage
 from apps.accounts.models import User
 from apps.core.tests.factories import TenantFactory
 from apps.inventory.models import StockLevel, StockMovement, StockMovementType

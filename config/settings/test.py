@@ -17,4 +17,4 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
-LOGGING["root"]["level"] = "CRITICAL"  # type: ignore[index]
+LOGGING["root"]["level"] = "CRITICAL"  # type: ignore[index]  # noqa: F405
