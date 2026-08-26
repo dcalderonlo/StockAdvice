@@ -1,11 +1,11 @@
 {% extends "emails/base.txt" %}
 
-{% block content %}Has sido invitado a StockAdvice
+{% block content %}You have been invited to StockAdvice
 
 {{ invited_by.email }} te ha invitado a unirte a StockAdvice.
 
-Crea tu contraseña y activa tu cuenta aquí:
+Create your password and activate your account here:
 {{ activation_link }}
 
-Este enlace expirará en 7 días.
+This link will expire in 7 days.
 {% endblock %}
