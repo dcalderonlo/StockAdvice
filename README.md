@@ -1,7 +1,7 @@
 # StockAdvice
 
 > Scheduled, multi-sector stock-replenishment advisory service. Reads your existing
-> DMS/ERP, computes velocity and reorder thresholds (Punto de Pedido), and emits
+> DMS/ERP, computes velocity and reorder thresholds (Reorder Point), and emits
 > human-approved recommendations — no autonomous purchasing.
 
 [![CI](https://github.com/dcalderonlo/StockAdvice/actions/workflows/ci.yml/badge.svg)](https://github.com/dcalderonlo/StockAdvice/actions)
@@ -16,7 +16,7 @@ purchase orders autonomously — it **reads** from them and proposes
 human-approved recommendations to the branch manager, coordinator, or
 gerente.
 
-The default sector is **automotive aftermarket** (concesionarios, repuestos),
+The default sector is **automotive aftermarket** (dealerships, repuestos),
 but the system is designed to be configurable for **other sectors**
 (pharmaceutical, hardware, manufacturing) via the `sector-configuration`
 capability.
@@ -34,8 +34,8 @@ DMS/ERP ──> [DMS Adapter] ──> [Ingestion] ──> [Velocity Calc] ──
    - **Velocity** (weighted average favoring recent months)
    - **Volume Class** (VC1–VC8 by sales volume)
    - **Lifecycle Stage** (New / Active / Pre-Obsolete / Obsolete / Inactive)
-   - **Planning Target**, **Punto de Pedido**, **Cantidad de Pedido**
-3. **Generate** recommendations when stock ≤ Punto de Pedido (multi-branch transfer first, external supplier as fallback).
+   - **Planning Target**, **Reorder Point**, **Order Quantity**
+3. **Generate** recommendations when stock ≤ Reorder Point (multi-branch transfer first, external supplier as fallback).
 4. **Approve** via role-based workflow (manager → coordinator → gerente for cross-coordinator cases).
 5. **Notify** the relevant people (email + in-app).
 

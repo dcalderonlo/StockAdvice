@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Reads catalog, stock, sales movements, lead times, Stock en Tránsito, cross-reference relationships, and branch topology from the DMS/ERP via a swappable adapter interface. The system consumes DMS data as-is (DMS is the source of truth) and never writes back. Supports distribution center topology and cross-OEM equivalent references.
+Reads catalog, stock, sales movements, lead times, In Transit Stock, cross-reference relationships, and branch topology from the DMS/ERP via a swappable adapter interface. The system consumes DMS data as-is (DMS is the source of truth) and never writes back. Supports distribution center topology and cross-OEM equivalent references.
 
 ## Requirements
 
@@ -32,24 +32,24 @@ The system **shall** read the parts catalog from the DMS, including:
 - AND if all retries fail, logs an ERROR and alerts the operations team
 
 ### REQ-CI-002: Stock read
-The system **shall** read live stock levels per branch warehouse, including Stock Disponible (physically available) and Stock en Tránsito (inbound units from any source).
+The system **shall** read live stock levels per branch warehouse, including Available Stock (physically available) and In Transit Stock (inbound units from any source).
 
 #### Scenario: Stock read with transit
 - GIVEN a branch has 15 units physically available and 10 units in transit
 - WHEN the system reads stock levels
-- THEN Stock Disponible = 15 and Stock en Tránsito = 10
+- THEN Available Stock = 15 and In Transit Stock = 10
 - AND both values are stored as separate fields
 
 #### Scenario: Missing SKU in stock table
 - GIVEN a part exists in the catalog but has no stock record
 - WHEN the system reads stock levels
-- THEN the system treats Stock Disponible = 0 and Stock en Tránsito = 0 for that SKU
+- THEN the system treats Available Stock = 0 and In Transit Stock = 0 for that SKU
 - AND flags the SKU as a cold-start candidate
 
 #### Scenario: Zero stock
 - GIVEN a SKU has no physical stock and no transit
 - WHEN the system reads stock levels
-- THEN Stock Disponible = 0 and Stock en Tránsito = 0
+- THEN Available Stock = 0 and In Transit Stock = 0
 - AND the SKU is eligible for replenishment recommendation
 
 ### REQ-CI-003: Sales movements read
@@ -74,13 +74,13 @@ The system **shall** read sales movements from the DMS, including POS public sal
 - AND all SKUs for this branch are treated as cold-start
 
 ### REQ-CI-004: Lead time read
-The system **shall** read lead times (Tiempo de Pedido) per supplier or per product, as available from the DMS or configuration.
+The system **shall** read lead times (Lead Time) per supplier or per product, as available from the DMS or configuration.
 
 #### Scenario: Lead time available per supplier
 - GIVEN the DMS provides lead times per supplier
 - WHEN the system reads lead times
 - THEN the system stores lead time per supplier
-- AND uses it in Planning Target and Punto de Pedido calculations
+- AND uses it in Planning Target and Reorder Point calculations
 
 #### Scenario: Lead time not available
 - GIVEN the DMS does not provide lead time data
@@ -101,19 +101,19 @@ The system **shall** read cross-reference relationships from the DMS (substituta
 - GIVEN two equivalent parts (SKU-A: 4 units, SKU-B: 6 units)
 - WHEN the system evaluates coverage for the cross-reference group
 - THEN the system aggregates stock to 10 units across both references
-- AND uses the aggregated value for Punto de Pedido evaluation
+- AND uses the aggregated value for Reorder Point evaluation
 
 ### REQ-CI-006: Branch topology read
-The system **shall** read branch topology from the DMS, including branch type (sucursal or centro de distribución), parent branch (for sucursales that depend on a DC), and branch managers.
+The system **shall** read branch topology from the DMS, including branch type (sucursal or distribution center), parent branch (for branches that depend on a DC), and branch managers.
 
 #### Scenario: DC topology with dependent branches
-- GIVEN a DC branch with two dependent sucursales
+- GIVEN a DC branch with two dependent branches
 - WHEN the system reads branch topology
-- THEN the DC is marked as centro de distribución with no parent
+- THEN the DC is marked as distribution center with no parent
 - AND each sucursal has parent_branch_id pointing to the DC
 
 #### Scenario: Flat topology (no DC)
-- GIVEN an organization with only sucursales and no DC
+- GIVEN an organization with only branches and no DC
 - WHEN the system reads branch topology
 - THEN all branches have branch_type = sucursal and parent_branch_id = NULL
 

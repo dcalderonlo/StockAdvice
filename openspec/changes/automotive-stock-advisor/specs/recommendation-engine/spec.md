@@ -2,31 +2,31 @@
 
 ## Purpose
 
-Generates replenishment recommendations with source resolution, prioritizing inter-branch transfers over external supplier orders. Handles multi-source split, partial fulfillment, DC topology, and excess stock protection to ensure source branches do not fall below their own Punto de Pedido.
+Generates replenishment recommendations with source resolution, prioritizing inter-branch transfers over external supplier orders. Handles multi-source split, partial fulfillment, DC topology, and excess stock protection to ensure source branches do not fall below their own Reorder Point.
 
 ## Requirements
 
 ### REQ-RE-001: Recommendation trigger
-The system **shall** generate a recommendation for each SKU where current stock (Stock Disponible + Stock en Tránsito) is less than or equal to the Punto de Pedido.
+The system **shall** generate a recommendation for each SKU where current stock (Available Stock + In Transit Stock) is less than or equal to the Reorder Point.
 
-#### Scenario: Stock below Punto de Pedido
-- GIVEN a SKU with Stock Disponible = 15, Stock en Tránsito = 10, Punto de Pedido = 47
+#### Scenario: Stock below Reorder Point
+- GIVEN a SKU with Available Stock = 15, In Transit Stock = 10, Reorder Point = 47
 - WHEN the replenishment run evaluates the SKU
-- THEN current stock (25) ≤ Punto de Pedido (47) triggers a recommendation
-- AND Cantidad de Pedido is calculated
+- THEN current stock (25) ≤ Reorder Point (47) triggers a recommendation
+- AND Order Quantity is calculated
 
-#### Scenario: Stock above Punto de Pedido
-- GIVEN a SKU with Stock Disponible = 50, Punto de Pedido = 47
+#### Scenario: Stock above Reorder Point
+- GIVEN a SKU with Available Stock = 50, Reorder Point = 47
 - WHEN the replenishment run evaluates the SKU
 - THEN no recommendation is generated for this SKU
 
-#### Scenario: Stock exactly at Punto de Pedido
-- GIVEN a SKU with Stock Disponible = 37, Stock en Tránsito = 0, Punto de Pedido = 37
+#### Scenario: Stock exactly at Reorder Point
+- GIVEN a SKU with Available Stock = 37, In Transit Stock = 0, Reorder Point = 37
 - WHEN the replenishment run evaluates the SKU
 - THEN the recommendation IS triggered (≤, not <)
 
 ### REQ-RE-002: Source resolution — inter-branch transfer first
-The system **shall** check other branches for excess stock before recommending external supplier orders. Excess stock is defined as: **max(0, current_stock − Punto de Pedido)**. A branch can transfer only up to its excess stock.
+The system **shall** check other branches for excess stock before recommending external supplier orders. Excess stock is defined as: **max(0, current_stock − Reorder Point)**. A branch can transfer only up to its excess stock.
 
 #### Scenario: Transfer from single source branch
 - GIVEN Branch A needs 12 units of SKU-X
@@ -81,10 +81,10 @@ For branches dependent on a DC, the system **shall** first check the parent DC f
 - THEN the system recommends 10 units from the DC and 15 units from the other branch
 
 ### REQ-RE-006: DC self-replenishment
-For distribution centers, the system **shall** calculate projected stock after fulfilling inter-branch transfers to dependent branches. If projected stock falls below the DC's own Punto de Pedido, the system **shall** recommend an external purchase order for the DC.
+For distribution centers, the system **shall** calculate projected stock after fulfilling inter-branch transfers to dependent branches. If projected stock falls below the DC's own Reorder Point, the system **shall** recommend an external purchase order for the DC.
 
 #### Scenario: DC needs replenishment after transfers
-- GIVEN a DC with Stock Disponible = 100 and Punto de Pedido = 60
+- GIVEN a DC with Available Stock = 100 and Reorder Point = 60
 - AND the DC must transfer 50 units to dependent branches
 - WHEN the system evaluates the DC
 - THEN projected stock after transfers = 50
@@ -97,7 +97,7 @@ Each recommendation **shall** include: SKU, classification code, quantity, sourc
 #### Scenario: Complete recommendation
 - GIVEN a replenishment run generates a recommendation
 - WHEN the recommendation is created
-- THEN it includes: internal SKU code, Volume Class/Lifecycle Stage, Cantidad de Pedido, source type, source branch (if transfer), and projected coverage days after fulfillment
+- THEN it includes: internal SKU code, Volume Class/Lifecycle Stage, Order Quantity, source type, source branch (if transfer), and projected coverage days after fulfillment
 
 ### REQ-RE-008: Lifecycle-stage-based exclusion
 The system **shall** exclude SKUs classified as OBS-R (Obsolete, >24 months no sales) and NS-NS (Non-stock) from automatic recommendations.
@@ -137,7 +137,7 @@ The system **shall** not generate automatic recommendations for SKUs with zero s
 ## Acceptance criteria
 
 - AC-1: Inter-branch transfer is always checked before external supplier
-- AC-2: Source branch never falls below its own Punto de Pedido after transfer
+- AC-2: Source branch never falls below its own Reorder Point after transfer
 - AC-3: Partial fulfillment generates alerts to branch manager, coordinator(s), and gerente
 - AC-4: OBS-R and NS-NS SKUs are excluded from automatic recommendations
 - AC-5: Cold-start SKUs are flagged for manual override, not auto-recommended

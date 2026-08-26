@@ -34,7 +34,7 @@ The system **shall** calculate velocity as a weighted average of monthly sales, 
 - AND does not reject the SKU for insufficient history
 
 ### REQ-VC-002: Coverage days
-The system **shall** calculate coverage days as 365 divided by the Stock Turn Ratio (Ingresos Año-12 / Stock Promedio-12). Coverage days represents the average number of days merchandise remains in stock until sold.
+The system **shall** calculate coverage days as 365 divided by the Stock Turn Ratio (Annual Revenue (Last 12 Months) / Average Stock-12). Coverage days represents the average number of days merchandise remains in stock until sold.
 
 #### Scenario: Normal coverage calculation
 - GIVEN annual revenue of 5605 and average stock value of 1830

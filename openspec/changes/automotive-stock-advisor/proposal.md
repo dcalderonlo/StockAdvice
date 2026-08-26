@@ -14,13 +14,13 @@
 
 Multi-branch organizations operate in a permanent tension between **availability** (too much stock → excess capital, obsolescence) and **capital** (too little stock → lost sales, poor service support). Inventory holding cost exceeds **20% annually** (damaged/lost parts, insurance, space, labor, capital cost). Today, replenishment is manual: managers eyeball spreadsheets, guess quantities, and miss the mathematical optimum.
 
-This system introduces a **scheduled, advisory replenishment engine** for multi-sector organizations (concesionarios, farmacéuticas, ferreterías, manufactureras, etc.). It reads live data from the DMS/ERP, calculates classification (Volume Class / Lifecycle Stage), velocity, Planning Target, Punto de Pedido, and Cantidad de Pedido per SKU, then generates concrete recommendations — first trying inter-branch transfers, then external supplier fallback. Humans approve every action; the system never writes stock.
+This system introduces a **scheduled, advisory replenishment engine** for multi-sector organizations (dealerships, pharmaceuticals, hardware stores, manufacturers, etc.). It reads live data from the DMS/ERP, calculates classification (Volume Class / Lifecycle Stage), velocity, Planning Target, Reorder Point, and Order Quantity per SKU, then generates concrete recommendations — first trying inter-branch transfers, then external supplier fallback. Humans approve every action; the system never writes stock.
 
 ## 2. Goals
 
-1. **Reduce Stock Excesivo** — cut excess stock (Stock Actual − Demanda Proyectada − Stock Seguridad) by ≥25% within 6 months of deployment.
-2. **Improve Rotación de Stock** — increase Stock Turn Ratio (Ingresos Año-12 / Stock Promedio-12) by ≥15% within 6 months.
-3. **Reduce Stock Obsoleto** — cut merchandise without sales >12 months by ≥20% within 12 months.
+1. **Reduce Excess Stock** — cut excess stock (Stock Actual − Demanda Proyectada − Stock Seguridad) by ≥25% within 6 months of deployment.
+2. **Improve Stock Turnover** — increase Stock Turn Ratio (Annual Revenue (Last 12 Months) / Average Stock-12) by ≥15% within 6 months.
+3. **Reduce Obsolete Stock** — cut merchandise without sales >12 months by ≥20% within 12 months.
 4. **Cut time-to-reorder** — from ~2 hours manual spreadsheet work per run to <15 minutes review-and-approve per branch.
 5. **Increase inter-branch transfer rate** — ≥40% of recommendations resolved via internal transfer before external ordering.
 6. **Achieve ≥80% recommendation acceptance** (approved or handled) within first quarter.
@@ -58,17 +58,17 @@ This system introduces a **scheduled, advisory replenishment engine** for multi-
 
 ### Warehouse Manager (one per branch)
 - **Who**: person responsible for parts inventory at a specific location.
-- **Responsibilities**: reviews Punto de Pedido alerts, approves/rejects/handles recommendations, applies demand overrides (with type selection), marks non-transferable recommendations as handled once external replenishment is coordinated off-system with the purchasing department (out of scope for v1), escalates high-impact recommendations, reviews classification output for their branch.
+- **Responsibilities**: reviews Reorder Point alerts, approves/rejects/handles recommendations, applies demand overrides (with type selection), marks non-transferable recommendations as handled once external replenishment is coordinated off-system with the purchasing department (out of scope for v1), escalates high-impact recommendations, reviews classification output for their branch.
 - **Access**: own branch only.
 
 ## 5. User Scenarios
 
-### Scenario 1: Scheduled run computes Punto de Pedido → recommendation generated
+### Scenario 1: Scheduled run computes Reorder Point → recommendation generated
 1. System triggers weekly run for Branch A.
 2. Engine reads live stock, sales movements (12 months), lead times from DMS.
-3. For each SKU: calculates classification (VC1–VC8 / New / Obsolete / Inactive), velocity (weighted average), Planning Target = (ventas_mensuales / 30) × días_del_periodo, Punto de Pedido = Planning Target + Lead Time.
-4. SKU "Brake Pads" (VC3): Stock Disponible = 15, Stock en Tránsito = 10, Planning Target = 37, Punto de Pedido = 47. Current stock (15) ≤ Punto de Pedido (47) → trigger.
-5. Cantidad de Pedido = Planning Target (37) − Stock Disponible (15) − Stock en Tránsito (10) = **12 units**.
+3. For each SKU: calculates classification (VC1–VC8 / New / Obsolete / Inactive), velocity (weighted average), Planning Target = (monthly_sales / 30) × period_days, Reorder Point = Planning Target + Lead Time.
+4. SKU "Brake Pads" (VC3): Available Stock = 15, In Transit Stock = 10, Planning Target = 37, Reorder Point = 47. Current stock (15) ≤ Reorder Point (47) → trigger.
+5. Order Quantity = Planning Target (37) − Available Stock (15) − In Transit Stock (10) = **12 units**.
 6. Source resolution: check other branches for surplus → Branch B has excess → recommend inter-branch transfer. Else recommend external supplier order (no supplier named).
 7. Recommendation enters `pending` state. Branch manager and coordinator notified.
 
@@ -97,7 +97,7 @@ This system introduces a **scheduled, advisory replenishment engine** for multi-
 2. Branch manager searches the system by primary manufacturer code; the system queries the DMS for "primary manufacturer code 12345-ABC and equivalents".
 3. DMS returns: 12345-ABC is related to 67890-DEF from Supplier Y (both currently manufactured; equivalent references per the DMS).
 4. DMS also returns aggregated stock AND aggregated KPIs for the cross-manufacturer group: 4 units of 12345-ABC + 6 units of 67890-DEF = 10 units across both references. The system also aggregates KPIs across the group: combined velocity, combined coverage days, consolidated classification (most conservative lifecycle stage wins — if 12345-ABC is Active and 67890-DEF is Pre-Obsolete, the group is treated as Pre-Obsolete for review purposes).
-5. The system uses the aggregated stock and aggregated KPIs (10 units, combined velocity, etc.) for the coverage calculation; no Punto de Pedido trigger if coverage is above threshold.
+5. The system uses the aggregated stock and aggregated KPIs (10 units, combined velocity, etc.) for the coverage calculation; no Reorder Point trigger if coverage is above threshold.
 6. If stock had been 0 across both references, the system would query alternative manufacturer equivalents as a fallback.
 
 ### Scenario 5: Lifecycle stage drives behavior
@@ -109,11 +109,11 @@ This system introduces a **scheduled, advisory replenishment engine** for multi-
 
 ### Catalog & Data Ingestion (Reads)
 - Read parts catalog from DMS: internal SKU code (primary key), primary manufacturer code, alternative manufacturer codes (1 Part ↔ M alternative manufacturer cross-reference). The system also reads cross-reference relationships from the DMS (substitutable references, alternative denominations, successor/predecessor references). The DMS is the source of truth; the system consumes them as-is. The system does not maintain its own cross-reference tables.
-- Read live stock levels from DMS per branch warehouse (Stock Disponible).
+- Read live stock levels from DMS per branch warehouse (Available Stock).
 - Read sales movements: POS public sales + workshop consumption (outbound); purchase entries (inbound).
-- Read Stock en Tránsito (units in transit to the branch, from any source: supplier purchase orders, in-flight inter-branch transfers). If unavailable in the DMS, the system can track transfers it has itself recommended (the system knows it advised an inter-branch transfer; once the branch manager marks it as approved, the system considers those units in transit until marked received). This is v1-ready.
+- Read In Transit Stock (units in transit to the branch, from any source: supplier purchase orders, in-flight inter-branch transfers). If unavailable in the DMS, the system can track transfers it has itself recommended (the system knows it advised an inter-branch transfer; once the branch manager marks it as approved, the system considers those units in transit until marked received). This is v1-ready.
 - Read Lead Time per supplier (or per product, if available from DMS or config).
-- Read branch topology: branch type (sucursal or centro de distribución), parent branch (for sucursales that depend on a DC), branch managers. A distribution center (DC) is a branch configured to supply other branches; it has its own stock, sales, and Punto de Pedido calculated independently. Multi-level DC hierarchies (DC depending on another DC) are out of scope for v1.
+- Read branch topology: branch type (sucursal or distribution center), parent branch (for branches that depend on a DC), branch managers. A distribution center (DC) is a branch configured to supply other branches; it has its own stock, sales, and Reorder Point calculated independently. Multi-level DC hierarchies (DC depending on another DC) are out of scope for v1.
 - Import 12+ months of historical sales at branch activation.
 - Sync frequency: per-run (live read at recommendation generation time).
 
@@ -131,22 +131,22 @@ This system introduces a **scheduled, advisory replenishment engine** for multi-
 - Classification drives replenishment behavior (e.g., NS-C = special handling, NS-NS = no auto-replenishment, OBS-R = exclude).
 - Gerente reviews classification results; Volume Classes applied automatically, Lifecycle Stage codes require gerente confirmation for special flags (NS-C campaign/recall, NS-NS non-stock). The gerente may delegate classification review to a designated coordinator within their scope (the designated coordinator becomes the primary reviewer for their scope; gerente retains oversight).
 
-### Planning Target & Punto de Pedido Calculation (Calculates)
-- **Planning Target** = (ventas_mensuales / 30) × (Periodo de Stock + Stock de Seguridad + Tiempo de Pedido). Per the source material's convention, Planning Target (Stock Máximo) INCLUDES lead time in the divisor. The system covers demand for the full replenishment cycle (operating period + safety buffer + lead time).
-- **Punto de Pedido** = Planning Target + Tiempo de Pedido (raw, in days, per the source material's example). The "+Tiempo de Pedido" is a literal numeric addition (dimensionally inconsistent but matches the material's example: PT 37 + lead 10 = PP 47).
+### Planning Target & Reorder Point Calculation (Calculates)
+- **Planning Target** = (monthly_sales / 30) × (Stock Period + Safety Stock + Lead Time). Per the source material's convention, Planning Target (Max Stock) INCLUDES lead time in the divisor. The system covers demand for the full replenishment cycle (operating period + safety buffer + lead time).
+- **Reorder Point** = Planning Target + Lead Time (raw, in days, per the source material's example). The "+Lead Time" is a literal numeric addition (dimensionally inconsistent but matches the material's example: PT 37 + lead 10 = PP 47).
 - Per-branch or per-supplier lead time (configurable).
 
-### Cantidad de Pedido Calculation (Calculates)
-- **Cantidad de Pedido** = Planning Target − Stock Disponible − Stock en Tránsito.
-- Stock en Tránsito treated as separate concept from Stock Disponible.
+### Order Quantity Calculation (Calculates)
+- **Order Quantity** = Planning Target − Available Stock − In Transit Stock.
+- In Transit Stock treated as separate concept from Available Stock.
 
 ### Recommendation Generation
 - Triggered by schedule (weekly/biweekly/monthly/quarterly, per-branch config).
-- For each SKU where current stock ≤ Punto de Pedido: calculate Cantidad de Pedido.
-- Source resolution: check other branches for **excess stock** (defined as `current_stock − Punto de Pedido`). A branch can transfer units to other branches only up to the amount of its excess stock, ensuring the source branch does not fall below its own Punto de Pedido. The system may split a recommendation across multiple source branches. If total excess stock across all candidate branches is less than the recommendation, the system alerts the branch manager, coordinator(s), and gerente del departamento about partial availability and recommends external purchase for the remainder (using the standard email + dashboard alert flow).
+- For each SKU where current stock ≤ Reorder Point: calculate Order Quantity.
+- Source resolution: check other branches for **excess stock** (defined as `current_stock − Reorder Point`). A branch can transfer units to other branches only up to the amount of its excess stock, ensuring the source branch does not fall below its own Reorder Point. The system may split a recommendation across multiple source branches. If total excess stock across all candidate branches is less than the recommendation, the system alerts the branch manager, coordinator(s), and gerente del departamento about partial availability and recommends external purchase for the remainder (using the standard email + dashboard alert flow).
 - Each recommendation includes: SKU, classification code, quantity, source type (transfer/supplier), source branch (if transfer), projected coverage after fulfillment.
-- For distribution centers, the Punto de Pedido check considers projected stock after fulfilling inter-branch transfers to dependent branches: `stock_proyectado_dc = stock_actual_dc − Σ unidades_a_transferir_a_dependientes`. If `stock_proyectado_dc ≤ Punto de Pedido`, the system recommends an external purchase order (Cantidad de Pedido = Planning Target − Stock Disponible − Stock en Tránsito). The source is always "external supplier" for DC replenishment (the DC is itself the source of its dependents). Notification recipients: branch manager of the DC, coordinator(s) that depend on the DC, gerente del departamento.
-- **Edge case: insufficient DC stock**: if the natural source (a DC) lacks sufficient stock to fulfill the recommendation, the system searches OTHER branches (not just the DC's children) for excess stock above their Punto de Pedido. The recommendation may be split across multiple sources (DC + other branches). If partial availability still does not cover the full recommendation, the system alerts the branch manager, coordinator(s), and gerente del departamento about the partial fulfillment and the remaining gap (using the standard email + dashboard alert flow; no new alert types).
+- For distribution centers, the Reorder Point check considers projected stock after fulfilling inter-branch transfers to dependent branches: `stock_proyectado_dc = stock_actual_dc − Σ unidades_a_transferir_a_dependientes`. If `stock_proyectado_dc ≤ Reorder Point`, the system recommends an external purchase order (Order Quantity = Planning Target − Available Stock − In Transit Stock). The source is always "external supplier" for DC replenishment (the DC is itself the source of its dependents). Notification recipients: branch manager of the DC, coordinator(s) that depend on the DC, gerente del departamento.
+- **Edge case: insufficient DC stock**: if the natural source (a DC) lacks sufficient stock to fulfill the recommendation, the system searches OTHER branches (not just the DC's children) for excess stock above their Reorder Point. The recommendation may be split across multiple sources (DC + other branches). If partial availability still does not cover the full recommendation, the system alerts the branch manager, coordinator(s), and gerente del departamento about the partial fulfillment and the remaining gap (using the standard email + dashboard alert flow; no new alert types).
 
 ### Approval Workflow
 - State machine: `pending → approved | rejected | handled | ordered`.
@@ -168,8 +168,8 @@ This system introduces a **scheduled, advisory replenishment engine** for multi-
 
 ### Dashboard (Role-Based Views)
 - **Branch manager view**: own branch stock health, pending recommendations, approval history, override log, classification results.
-- **Coordinator view**: branches in their scope (read), KPIs within their scope (Stock Total, Rotación, Cobertura, Stock Obsoleto, Stock Excesivo for their scope), escalated items, inter-branch transfer status (within their scope), branch manager activity in their scope.
-- **Admin view**: all branches, user management, system configuration, global KPIs (Stock Total, Rotación, Cobertura, Stock Obsoleto, Stock Excesivo).
+- **Coordinator view**: branches in their scope (read), KPIs within their scope (Total Stock, Turnover, Coverage, Obsolete Stock, Excess Stock for their scope), escalated items, inter-branch transfer status (within their scope), branch manager activity in their scope.
+- **Admin view**: all branches, user management, system configuration, global KPIs (Total Stock, Turnover, Coverage, Obsolete Stock, Excess Stock).
 
 ### Onboarding
 - Implementation-assisted: team or partner accompanies initial deployment.
@@ -178,15 +178,15 @@ This system introduces a **scheduled, advisory replenishment engine** for multi-
 
 ### User Management
 - A user can have one or more roles. Effective permissions are the union of all assigned roles. Audit logs record which role was used for each action. The admin panel warns about role combinations that may create conflicts of interest (e.g., a user with both admin and warehouse manager roles can configure the system and operate on their own branch). Roles are not exclusive by default. Available roles: administrator, gerente (department manager), warehouse manager, warehouse coordinator.
-- Branch configuration: each branch has a type ('sucursal' or 'centro de distribución'). A regular branch may have a parent_branch_id pointing to its DC. DCs are top-level (no parent) in v1; multi-level DC hierarchies are v2. Branch type is set at onboarding or via the admin/gerente panel.
+- Branch configuration: each branch has a type ('sucursal' or 'distribution center'). A regular branch may have a parent_branch_id pointing to its DC. DCs are top-level (no parent) in v1; multi-level DC hierarchies are v2. Branch type is set at onboarding or via the admin/gerente panel.
 - Branch assignment: manager linked to one specific branch; coordinator assigned to a subset of branches (multiple coordinators supported, each with their own scope); gerente supervises all branches (org-wide role); admin has global access.
 - Invitation flow: email-based, role + branch specified at invite time.
 
 ## 7. Business Rules
 
 1. **Replenishment hierarchy**: inter-branch transfer first → external supplier fallback. The system always checks for surplus stock at other branches before recommending external purchase.
-2. **Punto de Pedido trigger**: when current stock ≤ Punto de Pedido, recommend Cantidad de Pedido.
-3. **Stock en Tránsito**: treated separately from Stock Disponible in Cantidad de Pedido calculation.
+2. **Reorder Point trigger**: when current stock ≤ Reorder Point, recommend Order Quantity.
+3. **In Transit Stock**: treated separately from Available Stock in Order Quantity calculation.
 4. **Classification is calculated, not manual**: system runs periodic classification pass over catalog, derives Volume Class (VC1–VC8) and Lifecycle Stage (New, Obsolete, Inactive) codes per SKU from sales data. Special flags (NS-C campaign/recall, NS-NS non-stock) require gerente confirmation.
 5. **Lifecycle stages drive behavior**:
    - Lifecycle Stage: New (0–6 months from first entry): N1/N2/N3 codes; may require special handling.
@@ -202,20 +202,20 @@ This system introduces a **scheduled, advisory replenishment engine** for multi-
 11. **Escalation by threshold**: recommendations exceeding configured value, volume, or impact thresholds auto-escalate from branch manager to coordinator (or gerente if coordinator threshold crossed; gerente may further escalate to admin for system-wide cases). Thresholds configurable per tenant.
 12. **External replenishment off-system**: external replenishment is the responsibility of the purchasing department (compras), which is out of scope for v1. The system generates a recommendation flag and an alert; the purchasing department acts off-system. The system does not name a specific supplier in any recommendation.
 13. **Cross-coordinator transfer**: cross-coordinator transfers (between branches in different coordinator scopes) are decided by the gerente. The source and destination coordinators are notified but do not approve. If the gerente rejects, the transfer is not executed. Single-coordinator transfers (within the same scope) follow the standard branch manager → coordinator approval flow.
-14. **Excess stock for inter-branch transfer**: a branch can transfer units to other branches only up to the amount of its excess stock, defined as `current_stock − Punto de Pedido`. This ensures the source branch does not fall below its own Punto de Pedido when fulfilling transfers. The system may split a recommendation across multiple source branches based on their available excess. If total excess stock across all candidates is less than the recommendation, the system alerts the destination branch manager, coordinator(s), and gerente del departamento about partial availability and recommends external purchase for the remainder.
+14. **Excess stock for inter-branch transfer**: a branch can transfer units to other branches only up to the amount of its excess stock, defined as `current_stock − Reorder Point`. This ensures the source branch does not fall below its own Reorder Point when fulfilling transfers. The system may split a recommendation across multiple source branches based on their available excess. If total excess stock across all candidates is less than the recommendation, the system alerts the destination branch manager, coordinator(s), and gerente del departamento about partial availability and recommends external purchase for the remainder.
 
 ## 8. KPIs & Success Metrics
 
 ### Primary KPIs
-- **Stock Total** = Σ(current_stock × APP/DDP) — total capital tied up in inventory.
-- **Rotación de Stock** = Ingresos Año-12 / Stock Promedio-12 — how many times stock sells in 12 months. Target: ≥15% increase within 6 months.
-- **Cobertura (días)** = 365 / Stock Turn Ratio — average days merchandise is available until sold. Target: optimize toward balanced cost point.
-- **Stock Obsoleto** = merchandise without sales >12 months. Target: ≥20% reduction within 12 months.
-- **Stock Excesivo** = Stock Actual − (Demanda Proyectada + Stock Seguridad). Target: ≥25% reduction within 6 months.
-- **Stock de Seguridad** = additional buffer for peaks and delays (configurable per branch/SKU).
-- **Stock Máximo** = Periodo de Stock + Stock de Seguridad (= Planning Target component). Per the material's convention, Planning Target additionally includes Tiempo de Pedido.
-- **Punto de Pedido** = Planning Target + Tiempo de Pedido (raw, matches material).
-- **Cantidad de Pedido** = Planning Target − Stock Disponible − Stock en Tránsito.
+- **Total Stock** = Σ(current_stock × APP/DDP) — total capital tied up in inventory.
+- **Stock Turnover** = Annual Revenue (Last 12 Months) / Average Stock-12 — how many times stock sells in 12 months. Target: ≥15% increase within 6 months.
+- **Coverage (days)** = 365 / Stock Turn Ratio — average days merchandise is available until sold. Target: optimize toward balanced cost point.
+- **Obsolete Stock** = merchandise without sales >12 months. Target: ≥20% reduction within 12 months.
+- **Excess Stock** = Stock Actual − (Demanda Proyectada + Stock Seguridad). Target: ≥25% reduction within 6 months.
+- **Safety Stock** = additional buffer for peaks and delays (configurable per branch/SKU).
+- **Max Stock** = Stock Period + Safety Stock (= Planning Target component). Per the material's convention, Planning Target additionally includes Lead Time.
+- **Reorder Point** = Planning Target + Lead Time (raw, matches material).
+- **Order Quantity** = Planning Target − Available Stock − In Transit Stock.
 
 ### Secondary Process KPIs
 - **Time-to-reorder**: average time from recommendation generation to approval/action. Target: <15 minutes per run.
@@ -243,7 +243,7 @@ This system introduces a **scheduled, advisory replenishment engine** for multi-
 ### Open Questions
 - What is the exact weighted velocity formula? (Deferred to design; options: linear decay, exponential smoothing, custom weights per month.)
 - What are the default escalation thresholds? (System provides sensible defaults based on industry standards; first deployment may tune per their historical order values.)
-- How is "surplus stock" defined for inter-branch transfer? → **ANSWERED**: Excess stock = `current_stock − Punto de Pedido`. A branch can transfer up to its excess stock without falling below its own Punto de Pedido. The system splits recommendations across multiple sources when needed.
+- How is "surplus stock" defined for inter-branch transfer? → **ANSWERED**: Excess stock = `current_stock − Reorder Point`. A branch can transfer up to its excess stock without falling below its own Reorder Point. The system splits recommendations across multiple sources when needed.
 - How should the system handle SKUs with irregular sales patterns (Ciclo Temporal / estacionalidad)? (Deferred to v2; v1 uses linear Planning Target calculation.)
 - Should classification pass run at the same frequency as replenishment run, or separately (e.g., monthly)? (Deferred to design; likely separate to avoid reclassification on every run.)
 
@@ -254,14 +254,14 @@ This system introduces a **scheduled, advisory replenishment engine** for multi-
 - DMS/ERP read integration (catalog, stock, sales movements, lead times if available).
 - Classification engine (VC1–VC8 / New / Obsolete / Inactive derivation from sales data).
 - Velocity calculation (weighted average, 12-month window).
-- Planning Target & Punto de Pedido calculation.
-- Cantidad de Pedido calculation (with Stock en Tránsito as separate concept).
+- Planning Target & Reorder Point calculation.
+- Order Quantity calculation (with In Transit Stock as separate concept).
 - Recommendation generation with inter-branch transfer priority.
 - Full approval workflow (pending → approved/rejected/handled/ordered).
 - Escalation by configurable threshold.
 - Demand override UX with mandatory type selection.
 - Email + in-app notifications.
-- Role-based dashboard (admin, gerente, branch manager, coordinator) with KPI tiles (Stock Total, Rotación, Cobertura, Stock Obsoleto, Stock Excesivo).
+- Role-based dashboard (admin, gerente, branch manager, coordinator) with KPI tiles (Total Stock, Turnover, Coverage, Obsolete Stock, Excess Stock).
 - Implementation-assisted onboarding with 12-month sales backfill.
 - User invitation and role/branch assignment.
 - Lifecycle stage visibility (New, Active, Pre-Obsolete, Obsolete, Non-Stocking).
@@ -285,15 +285,15 @@ This system introduces a **scheduled, advisory replenishment engine** for multi-
 ## 11. Capabilities
 
 ### New Capabilities
-- `catalog-ingestion`: reads catalog (with internal SKU code, primary manufacturer code, alternative manufacturer codes — 1 Part ↔ M alternative manufacturer cross-reference), stock, sales movements, lead times, Stock en Tránsito, cross-reference relationships, and branch topology (branch type, parent branch) from the DMS/ERP (DMS is the source of truth for cross-reference data and branch topology). Supports distribution center topology: a branch can be configured as a DC that supplies other branches, with velocity aggregation and Punto de Pedido calculated accordingly. Multi-level DC hierarchies are v2.
+- `catalog-ingestion`: reads catalog (with internal SKU code, primary manufacturer code, alternative manufacturer codes — 1 Part ↔ M alternative manufacturer cross-reference), stock, sales movements, lead times, In Transit Stock, cross-reference relationships, and branch topology (branch type, parent branch) from the DMS/ERP (DMS is the source of truth for cross-reference data and branch topology). Supports distribution center topology: a branch can be configured as a DC that supplies other branches, with velocity aggregation and Reorder Point calculated accordingly. Multi-level DC hierarchies are v2.
 - `velocity-calculation`: weighted average velocity, coverage days (365 / Stock Turn Ratio), projected demand.
 - `classification-engine`: periodic classification pass deriving Volume Class (VC1–VC8) and Lifecycle Stage (New: N1/N2/N3, Obsolete: OBS-S/OBS-N/OBS-P/OBS-R, Inactive, Special: NS-C/NS-NS) codes from sales data.
-- `planning-calculation`: Planning Target, Punto de Pedido, Cantidad de Pedido per SKU.
+- `planning-calculation`: Planning Target, Reorder Point, Order Quantity per SKU.
 - `recommendation-engine`: generate replenishment recommendations with source resolution (inter-branch transfer → external supplier fallback).
 - `approval-workflow`: state machine, escalation, threshold-based routing.
 - `demand-override`: override UX with mandatory type selection and persistence rules.
 - `notification-service`: email + in-app alerts for recommendations and escalations.
-- `dashboard`: role-based views for stock health, recommendations, classification results, and KPI tiles (Stock Total, Rotación, Cobertura, Stock Obsoleto, Stock Excesivo).
+- `dashboard`: role-based views for stock health, recommendations, classification results, and KPI tiles (Total Stock, Turnover, Coverage, Obsolete Stock, Excess Stock).
 - `onboarding`: guided branch activation with sales backfill.
 - `user-management`: invitation, role assignment, branch access control with coordinator-level branch scoping (multiple coordinators supported, each with their own subset of branches) and gerente-level org-wide scope. Supports multiple roles per user, with effective permissions computed as the union of all assigned roles.
 - `sector-configuration`: configuration of sector-specific terminology, classification codes, lifecycle stages, and special categories. The system ships with a default configuration (automotive aftermarket) and supports adding other sectors (pharmaceutical, hardware, manufacturing, etc.) by configuring terminology, classification, and lifecycle rules without modifying the core logic.
@@ -304,7 +304,7 @@ None (greenfield project).
 
 ## 12. Approach
 
-The system operates as a **read-only advisory layer** on top of the organization's existing DMS/ERP. It never writes to the DMS. At each scheduled run, it pulls live stock, sales data, and lead times, computes derived metrics (classification, velocity, Planning Target, Punto de Pedido, Cantidad de Pedido), persists those metrics in its own database, and generates recommendations. Recommendations enter a workflow state machine; humans approve, reject, or mark as handled. The system tracks the state but does not execute fulfillment.
+The system operates as a **read-only advisory layer** on top of the organization's existing DMS/ERP. It never writes to the DMS. At each scheduled run, it pulls live stock, sales data, and lead times, computes derived metrics (classification, velocity, Planning Target, Reorder Point, Order Quantity), persists those metrics in its own database, and generates recommendations. Recommendations enter a workflow state machine; humans approve, reject, or mark as handled. The system tracks the state but does not execute fulfillment.
 
 Key architectural decisions (deferred to design phase):
 - Stack selection (language, framework, database).
@@ -330,24 +330,24 @@ Avoid for v1: Kubernetes, microservices, complex message queues, custom infrastr
 
 Given the absence of a confirmed pilot client and the solo-development context, consider building a **minimal viable spike first** ("Phase 0") that validates the core flow with minimal investment:
 
-- **Phase 0 (spike)**: a minimal script or small app that does the core flow end-to-end — read a small dataset → calculate Punto de Pedido → generate a recommendation → show it in a console or simple HTML page. Validates the methodology with the developer as the first "user". Time investment: days, not months.
+- **Phase 0 (spike)**: a minimal script or small app that does the core flow end-to-end — read a small dataset → calculate Reorder Point → generate a recommendation → show it in a console or simple HTML page. Validates the methodology with the developer as the first "user". Time investment: days, not months.
 - **Phase 1 (v1 MVP)**: the full proposal scope, but with simple tooling, basic UI, and the most important features first. Defer the rest (advanced analytics, complex multi-coordinator logic, etc.) to v1.5 or v2.
 - **Phase 2+ (v1 full + v2)**: complete the full v1 scope, add the v2+ features, and harden for production.
 
 This MVP-first approach reduces risk: if the methodology doesn't work as expected, the developer has invested days, not months. If it does work, the Phase 0 spike becomes the seed of Phase 1.
 
-The system supports multiple sectors via the `sector-configuration` capability. v1 is configured for automotive aftermarket by default; other sectors (pharmaceutical, hardware, manufacturing, etc.) can be supported by configuring terminology, classification, and lifecycle rules without modifying the core logic. The formulas (Punto de Pedido, Cantidad de Pedido, Planning Target) are universal inventory management concepts; sector-specific aspects are the labels and rules, not the math.
+The system supports multiple sectors via the `sector-configuration` capability. v1 is configured for automotive aftermarket by default; other sectors (pharmaceutical, hardware, manufacturing, etc.) can be supported by configuring terminology, classification, and lifecycle rules without modifying the core logic. The formulas (Reorder Point, Order Quantity, Planning Target) are universal inventory management concepts; sector-specific aspects are the labels and rules, not the math.
 
 ## 13. Phasing
 
 ### v1 (This Proposal)
-- Scheduled replenishment engine with classification, velocity, Planning Target, Punto de Pedido, Cantidad de Pedido.
+- Scheduled replenishment engine with classification, velocity, Planning Target, Reorder Point, Order Quantity.
 - DMS/ERP read integration (catalog, stock, sales, lead times if available).
 - Recommendation generation with inter-branch transfer priority.
 - Full approval workflow with escalation.
 - Demand override UX with mandatory type selection.
 - Email + in-app notifications.
-- Role-based dashboard with KPI tiles (Stock Total, Rotación, Cobertura, Stock Obsoleto, Stock Excesivo).
+- Role-based dashboard with KPI tiles (Total Stock, Turnover, Coverage, Obsolete Stock, Excess Stock).
 - Implementation-assisted onboarding.
 - User management with invitation flow.
 - Lifecycle stage visibility (New, Active, Pre-Obsolete, Obsolete, Non-Stocking).
@@ -370,8 +370,8 @@ The system supports multiple sectors via the `sector-configuration` capability. 
 
 | Area | Impact | Description |
 |------|--------|-------------|
-| DMS/ERP database | Read | System reads catalog, stock, sales movements, lead times, Stock en Tránsito. No writes. |
-| Branch warehouse operations | Modified | Warehouse managers shift from manual spreadsheet to dashboard-based review of Punto de Pedido alerts and recommendations. |
+| DMS/ERP database | Read | System reads catalog, stock, sales movements, lead times, In Transit Stock. No writes. |
+| Branch warehouse operations | Modified | Warehouse managers shift from manual spreadsheet to dashboard-based review of Reorder Point alerts and recommendations. |
 | Coordinator workflow | Modified | Coordinators receive escalated recommendations and approve inter-branch transfers. |
 | Admin operations | Modified | Admins configure system, manage users, monitor global KPIs; gerente (or delegated coordinator) reviews classification results. |
 | IT infrastructure | New | System requires hosting, database, email service, DMS connectivity. |
@@ -395,14 +395,14 @@ The system is advisory-only and reads from the DMS without writing. Rollback is 
 
 ## 17. Success Criteria
 
-- [ ] System generates recommendations for all active SKUs at each scheduled run based on Punto de Pedido trigger.
+- [ ] System generates recommendations for all active SKUs at each scheduled run based on Reorder Point trigger.
 - [ ] Classification engine derives VC1–VC8 / New / Obsolete / Inactive codes from sales data; gerente (or delegated coordinator) can review and confirm special flags (NS-C, NS-NS).
-- [ ] Planning Target, Punto de Pedido, and Cantidad de Pedido calculated per material formulas.
+- [ ] Planning Target, Reorder Point, and Order Quantity calculated per material formulas.
 - [ ] Branch managers can review and act on all pending recommendations within 15 minutes per run.
 - [ ] Escalation workflow routes high-impact recommendations to coordinator automatically.
 - [ ] Demand override UX prompts for type selection on every override; overrides persist according to selected type.
 - [ ] SKUs classified as OBS-R (Obsolete, >24 months no sales) excluded from recommendations; remain visible in catalog.
 - [ ] Cold-start SKUs require manual override before inclusion.
-- [ ] Dashboard displays accurate KPIs (Stock Total, Rotación, Cobertura, Stock Obsoleto, Stock Excesivo) and classification results for each role.
+- [ ] Dashboard displays accurate KPIs (Total Stock, Turnover, Coverage, Obsolete Stock, Excess Stock) and classification results for each role.
 - [ ] Email notifications delivered within 5 minutes of recommendation generation or escalation.
 - [ ] First client onboarded with 12-month sales backfill and operational within 4 weeks.
