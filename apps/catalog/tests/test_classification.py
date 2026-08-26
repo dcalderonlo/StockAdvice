@@ -44,8 +44,8 @@ def create_stock(tenant, branch, part: Part, disponible: float) -> StockLevel:
         tenant=tenant,
         branch=branch,
         part=part,
-        stock_disponible=Decimal(str(disponible)),
-        stock_en_transito=Decimal("0"),
+        available_stock=Decimal(str(disponible)),
+        in_transit_stock=Decimal("0"),
     )
 
 

@@ -53,7 +53,7 @@
         <thead>
             <tr style="background: #eee;">
                 <th>SKU</th><th>Description</th><th>Stock</th><th>In Transit</th>
-                <th>Punto de Pedido</th><th>Quantity to Order</th><th>Status</th>
+                <th>Reorder Point</th><th>Quantity to Order</th><th>Status</th>
             </tr>
         </thead>
         <tbody>
@@ -61,10 +61,10 @@
             <tr style="{% if item.triggered %}background: #fff3cd;{% endif %}">
                 <td>{{ item.part_code }}</td>
                 <td>{{ item.part_description }}</td>
-                <td>{{ item.stock_disponible|floatformat:0 }}</td>
-                <td>{{ item.stock_en_transito|floatformat:0 }}</td>
-                <td>{{ item.punto_pedido|floatformat:1 }}</td>
-                <td>{{ item.cantidad_pedido|floatformat:0 }}</td>
+                <td>{{ item.available_stock|floatformat:0 }}</td>
+                <td>{{ item.in_transit_stock|floatformat:0 }}</td>
+                <td>{{ item.reorder_point|floatformat:1 }}</td>
+                <td>{{ item.order_quantity|floatformat:0 }}</td>
                 <td>{% if item.triggered %}⚠ Triggered{% else %}✓ OK{% endif %}</td>
             </tr>
             {% empty %}

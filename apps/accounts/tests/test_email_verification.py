@@ -50,11 +50,11 @@ class TestEmailVerificationView:
         verification = services.create_email_verification(user)
         response = client.get(f"/accounts/verify/{verification.token}/")
         assert response.status_code == 200
-        assert b"verificado" in response.content.lower()
+        assert b"verified" in response.content.lower()
 
     def test_send_verification_email(self, user, rf):
         verification = services.create_email_verification(user)
         request = rf.get("/")
         services.send_verification_email(verification, request)
         assert len(mail.outbox) == 1
-        assert "Verifica" in mail.outbox[0].subject
+        assert "Verify" in mail.outbox[0].subject

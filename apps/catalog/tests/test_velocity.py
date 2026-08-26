@@ -69,8 +69,8 @@ def create_stock(tenant, branch, part: Part, disponible: float) -> StockLevel:
         tenant=tenant,
         branch=branch,
         part=part,
-        stock_disponible=Decimal(str(disponible)),
-        stock_en_transito=Decimal("0"),
+        available_stock=Decimal(str(disponible)),
+        in_transit_stock=Decimal("0"),
     )
 
 
@@ -239,7 +239,7 @@ def test_tenant_isolation(tenant, part):
 @pytest.mark.django_db
 def test_dc_velocity_aggregation(tenant, part):
     dc = BranchFactory(
-        tenant=tenant, code="DC-001", type=BranchType.CENTRO_DISTRIBUCION
+        tenant=tenant, code="DC-001", type=BranchType.DISTRIBUTION_CENTER
     )
     dependent_a = BranchFactory(tenant=tenant, code="SUC-A", parent_branch=dc)
     dependent_b = BranchFactory(tenant=tenant, code="SUC-B", parent_branch=dc)
@@ -263,7 +263,7 @@ def test_dc_velocity_aggregation(tenant, part):
 @pytest.mark.django_db
 def test_dc_with_no_dependents(tenant, part):
     dc = BranchFactory(
-        tenant=tenant, code="DC-001", type=BranchType.CENTRO_DISTRIBUCION
+        tenant=tenant, code="DC-001", type=BranchType.DISTRIBUTION_CENTER
     )
     create_sales(tenant, dc, part, [7.0] * 12)
     create_stock(tenant, dc, part, 50.0)

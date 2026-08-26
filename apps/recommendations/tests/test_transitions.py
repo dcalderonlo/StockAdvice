@@ -46,7 +46,7 @@ def recommendation(tenant, branch, part):
         state=RecommendationState.PENDING,
         quantity=Decimal("12.00"),
         current_stock=Decimal("15.00"),
-        punto_pedido=Decimal("47.00"),
+        reorder_point=Decimal("47.00"),
         planning_target=Decimal("37.00"),
         velocity=Decimal("20.00"),
     )

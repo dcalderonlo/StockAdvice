@@ -16,8 +16,8 @@ from apps.catalog.models import Part
 from apps.core.models import Tenant
 
 from .models import (
-    StockEnTransito,
-    StockEnTransitoStatus,
+    InTransitStock,
+    InTransitStockStatus,
     StockLevel,
     StockMovement,
     StockMovementType,
@@ -89,7 +89,7 @@ class InventoryIngestionService:
                 branch=branch,
                 part=part,
                 defaults={
-                    "stock_disponible": Decimal(str(qty)),
+                    "available_stock": Decimal(str(qty)),
                     "last_synced_at": timezone.now(),
                 },
             )
@@ -98,7 +98,7 @@ class InventoryIngestionService:
                 "ingestion.stock.updated",
                 branch=branch_code,
                 sku=sku,
-                quantity=stock_level.stock_disponible,
+                quantity=stock_level.available_stock,
             )
 
         logger.info(
@@ -212,7 +212,7 @@ class InventoryIngestionService:
 
             transit_total[part] = transit_total.get(part, Decimal("0")) + quantity
 
-            StockEnTransito.objects.update_or_create(
+            InTransitStock.objects.update_or_create(
                 tenant=self.tenant,
                 destination_branch=branch,
                 part=part,
@@ -220,7 +220,7 @@ class InventoryIngestionService:
                 defaults={
                     "source_branch": branch,
                     "quantity": quantity,
-                    "status": StockEnTransitoStatus.PENDING,
+                    "status": InTransitStockStatus.PENDING,
                     "expected_arrival": expected_date,
                 },
             )
@@ -231,7 +231,7 @@ class InventoryIngestionService:
                 branch=branch,
                 part=part,
                 defaults={
-                    "stock_en_transito": total,
+                    "in_transit_stock": total,
                     "last_synced_at": timezone.now(),
                 },
             )
@@ -239,7 +239,7 @@ class InventoryIngestionService:
                 "ingestion.purchase_orders.updated",
                 branch=branch_code,
                 sku=part.internal_sku_code,
-                transit=stock_level.stock_en_transito,
+                transit=stock_level.in_transit_stock,
             )
 
         logger.info(
@@ -255,8 +255,8 @@ class InventoryIngestionService:
             branch=branch,
             part=part,
             defaults={
-                "stock_disponible": Decimal("0"),
-                "stock_en_transito": Decimal("0"),
+                "available_stock": Decimal("0"),
+                "in_transit_stock": Decimal("0"),
             },
         )
         return stock_level

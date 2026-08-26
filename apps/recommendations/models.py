@@ -29,7 +29,7 @@ class AlreadyDecidedError(InvalidTransitionError):
 class Recommendation(TenantAwareModel):
     """A replenishment recommendation for a part at a branch.
 
-    Snapshot fields (current_stock, punto_pedido, planning_target, velocity,
+    Snapshot fields (current_stock, reorder_point, planning_target, velocity,
     classification) are frozen at generation time so the recommendation remains
     traceable even if the underlying data changes later.
     """
@@ -81,7 +81,7 @@ class Recommendation(TenantAwareModel):
         help_text="Multi-source allocation: list of {source_type, source_branch, quantity}.",
     )
     current_stock = models.DecimalField(max_digits=12, decimal_places=2)
-    punto_pedido = models.DecimalField(max_digits=12, decimal_places=2)
+    reorder_point = models.DecimalField(max_digits=12, decimal_places=2)
     planning_target = models.DecimalField(max_digits=12, decimal_places=2)
     explanation = models.TextField(blank=True)
     classification = models.CharField(max_length=100, blank=True)

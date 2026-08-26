@@ -98,7 +98,7 @@ SALES_HISTORIES: dict[str, list[int]] = {
 
 # Current stock levels. Mix of low/surplus/normal to exercise the engine.
 STOCK_LEVELS: dict[str, tuple[float, float]] = {
-    # (stock_disponible, stock_en_transito)
+    # (available_stock, in_transit_stock)
     # Fast movers: some low stock to trigger recommendations.
     "BP-001": (15.0, 10.0),  # proposal scenario 1 reference
     "OF-001": (8.0, 0.0),

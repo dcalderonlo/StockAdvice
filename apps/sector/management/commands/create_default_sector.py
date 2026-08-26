@@ -13,7 +13,7 @@ class Command(BaseCommand):
             sector_key=DEFAULT_SECTOR_KEY,
             defaults={
                 "name": "Automotive Aftermarket",
-                "description": "Default sector for automotive aftermarket parts (concesionarios).",
+                "description": "Default sector for automotive aftermarket parts (dealerships).",
                 "is_default": True,
                 "config_json": DEFAULT_CONFIG,
             },

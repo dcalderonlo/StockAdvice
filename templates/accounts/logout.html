@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Sesión cerrada - StockAdvice{% endblock %}
+{% block title %}Logged out - StockAdvice{% endblock %}
 
 {% block content %}
-<h1>Sesión cerrada</h1>
-<p>Tu sesión ha finalizado. <a href="{% url 'login' %}">Volver a iniciar sesión</a>.</p>
+<h1>Logged out</h1>
+<p>Your session has ended. <a href="{% url 'login' %}">Log in again</a>.</p>
 {% endblock %}

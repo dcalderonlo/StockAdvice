@@ -22,28 +22,28 @@ def test_create_branch(tenant):
         tenant=tenant,
         code="SUC-001",
         name="Main Branch",
-        type=BranchType.SUCURSAL,
+        type=BranchType.BRANCH,
     )
     assert branch.code == "SUC-001"
     assert branch.name == "Main Branch"
-    assert branch.type == BranchType.SUCURSAL
+    assert branch.type == BranchType.BRANCH
     assert branch.is_active is True
 
 
 @pytest.mark.django_db
 def test_unique_code_per_tenant(tenant):
-    Branch.objects.create(tenant=tenant, code="SUC-001", name="First", type=BranchType.SUCURSAL)
+    Branch.objects.create(tenant=tenant, code="SUC-001", name="First", type=BranchType.BRANCH)
     with pytest.raises(Exception):
-        Branch.objects.create(tenant=tenant, code="SUC-001", name="Second", type=BranchType.SUCURSAL)
+        Branch.objects.create(tenant=tenant, code="SUC-001", name="Second", type=BranchType.BRANCH)
 
 
 @pytest.mark.django_db
 def test_branch_type_helpers(tenant):
     dc = Branch.objects.create(
-        tenant=tenant, code="CD-001", name="DC", type=BranchType.CENTRO_DISTRIBUCION
+        tenant=tenant, code="CD-001", name="DC", type=BranchType.DISTRIBUTION_CENTER
     )
     suc = Branch.objects.create(
-        tenant=tenant, code="SUC-001", name="Branch", type=BranchType.SUCURSAL
+        tenant=tenant, code="SUC-001", name="Branch", type=BranchType.BRANCH
     )
     assert dc.is_distribution_center() is True
     assert dc.is_regular_branch() is False
@@ -54,13 +54,13 @@ def test_branch_type_helpers(tenant):
 @pytest.mark.django_db
 def test_dc_cannot_have_parent(tenant):
     dc = Branch.objects.create(
-        tenant=tenant, code="CD-001", name="DC", type=BranchType.CENTRO_DISTRIBUCION
+        tenant=tenant, code="CD-001", name="DC", type=BranchType.DISTRIBUTION_CENTER
     )
     branch = Branch(
         tenant=tenant,
         code="SUC-001",
         name="Child",
-        type=BranchType.CENTRO_DISTRIBUCION,
+        type=BranchType.DISTRIBUTION_CENTER,
         parent_branch=dc,
     )
     with pytest.raises(ValidationError):
@@ -68,15 +68,15 @@ def test_dc_cannot_have_parent(tenant):
 
 
 @pytest.mark.django_db
-def test_sucursal_can_have_parent_dc(tenant):
+def test_branch_can_have_parent_dc(tenant):
     dc = Branch.objects.create(
-        tenant=tenant, code="CD-001", name="DC", type=BranchType.CENTRO_DISTRIBUCION
+        tenant=tenant, code="CD-001", name="DC", type=BranchType.DISTRIBUTION_CENTER
     )
     branch = Branch.objects.create(
         tenant=tenant,
         code="SUC-001",
         name="Child",
-        type=BranchType.SUCURSAL,
+        type=BranchType.BRANCH,
         parent_branch=dc,
     )
     assert branch.parent_branch == dc
@@ -85,13 +85,13 @@ def test_sucursal_can_have_parent_dc(tenant):
 @pytest.mark.django_db
 def test_parent_must_be_dc(tenant):
     suc = Branch.objects.create(
-        tenant=tenant, code="SUC-001", name="Branch", type=BranchType.SUCURSAL
+        tenant=tenant, code="SUC-001", name="Branch", type=BranchType.BRANCH
     )
     child = Branch(
         tenant=tenant,
         code="SUC-002",
         name="Child",
-        type=BranchType.SUCURSAL,
+        type=BranchType.BRANCH,
         parent_branch=suc,
     )
     with pytest.raises(ValidationError):
@@ -104,7 +104,7 @@ def test_self_reference_not_allowed(tenant):
         tenant=tenant,
         code="SUC-001",
         name="Branch",
-        type=BranchType.SUCURSAL,
+        type=BranchType.BRANCH,
     )
     branch.save()
     branch.parent_branch = branch
@@ -115,20 +115,20 @@ def test_self_reference_not_allowed(tenant):
 @pytest.mark.django_db
 def test_dependent_branches_relationship(tenant):
     dc = Branch.objects.create(
-        tenant=tenant, code="CD-001", name="DC", type=BranchType.CENTRO_DISTRIBUCION
+        tenant=tenant, code="CD-001", name="DC", type=BranchType.DISTRIBUTION_CENTER
     )
     b1 = Branch.objects.create(
         tenant=tenant,
         code="SUC-001",
         name="B1",
-        type=BranchType.SUCURSAL,
+        type=BranchType.BRANCH,
         parent_branch=dc,
     )
     b2 = Branch.objects.create(
         tenant=tenant,
         code="SUC-002",
         name="B2",
-        type=BranchType.SUCURSAL,
+        type=BranchType.BRANCH,
         parent_branch=dc,
     )
     dependents = list(dc.dependent_branches.all())
@@ -145,7 +145,7 @@ def test_manager_and_coordinator_links(tenant):
         tenant=tenant,
         code="SUC-001",
         name="Branch",
-        type=BranchType.SUCURSAL,
+        type=BranchType.BRANCH,
         manager=manager,
         coordinator=coordinator,
     )

@@ -21,11 +21,11 @@ import pytest
 
 from stockadvice_spike.formulas import (
     annual_sales_from_history,
-    cantidad_pedido,
+    order_quantity,
     coverage_days,
     excess_stock,
     planning_target,
-    punto_pedido,
+    reorder_point,
     stock_turn_ratio,
     velocity,
     volume_class,
@@ -84,30 +84,30 @@ class TestPuntoDePedido:
     def test_material_example_one(self) -> None:
         # Material: PT = 37, lead = 10 → PP = 37 + 10 = 47.
         # (Using float PT 36.67, PP = 36.67 + 10 = 46.67.)
-        assert punto_pedido(planning_target_value=36.67, lead_time_days=10) == pytest.approx(46.67, abs=0.01)
+        assert reorder_point(planning_target_value=36.67, lead_time_days=10) == pytest.approx(46.67, abs=0.01)
 
     def test_material_example_two(self) -> None:
         # Material: PT ≈ 31, lead = 11 → PP = 31 + 11 = 42.
         # (Using float PT 30.8, PP = 30.8 + 11 = 41.8.)
-        assert punto_pedido(planning_target_value=30.8, lead_time_days=11) == pytest.approx(41.8, abs=0.01)
+        assert reorder_point(planning_target_value=30.8, lead_time_days=11) == pytest.approx(41.8, abs=0.01)
 
 
 class TestCantidadPedido:
     def test_material_example_one(self) -> None:
         # Material: PT = 37, stock = 15, transit = 10 → CP = 37 - 15 - 10 = 12.
         # (Using float PT 36.67, CP = 36.67 - 15 - 10 = 11.67.)
-        assert cantidad_pedido(36.67, stock_disponible=15.0, stock_en_transito=10.0) == pytest.approx(11.67, abs=0.01)
+        assert order_quantity(36.67, available_stock=15.0, in_transit_stock=10.0) == pytest.approx(11.67, abs=0.01)
 
     def test_material_example_two(self) -> None:
         # Material: PT = 31, stock = 9, transit = 20 → CP = 31 - 9 - 20 = 2.
         # (Using float PT 30.8, CP = 30.8 - 9 - 20 = 1.8.)
-        assert cantidad_pedido(30.8, stock_disponible=9.0, stock_en_transito=20.0) == pytest.approx(1.8, abs=0.01)
+        assert order_quantity(30.8, available_stock=9.0, in_transit_stock=20.0) == pytest.approx(1.8, abs=0.01)
 
     def test_cantidad_is_zero_when_stock_exceeds_target(self) -> None:
-        assert cantidad_pedido(10.0, stock_disponible=20.0, stock_en_transito=0.0) == 0.0
+        assert order_quantity(10.0, available_stock=20.0, in_transit_stock=0.0) == 0.0
 
     def test_cantidad_accounts_for_transit(self) -> None:
-        assert cantidad_pedido(100.0, stock_disponible=70.0, stock_en_transito=20.0) == 10.0
+        assert order_quantity(100.0, available_stock=70.0, in_transit_stock=20.0) == 10.0
 
 
 class TestVolumeClass:
@@ -139,18 +139,18 @@ class TestVolumeClass:
 
 class TestExcessStock:
     def test_excess_when_stock_above_pp(self) -> None:
-        assert excess_stock(stock_actual=100.0, punto_pedido_value=40.0) == 60.0
+        assert excess_stock(current_stock=100.0, reorder_point_value=40.0) == 60.0
 
     def test_no_excess_when_stock_at_pp(self) -> None:
-        assert excess_stock(stock_actual=40.0, punto_pedido_value=40.0) == 0.0
+        assert excess_stock(current_stock=40.0, reorder_point_value=40.0) == 0.0
 
     def test_no_excess_when_stock_below_pp(self) -> None:
-        assert excess_stock(stock_actual=30.0, punto_pedido_value=40.0) == 0.0
+        assert excess_stock(current_stock=30.0, reorder_point_value=40.0) == 0.0
 
 
 class TestKPIs:
     def test_stock_turn_ratio(self) -> None:
-        # From material: Ingresos Año-12 = 5605, Stock Promedio-12 = 1830 → 3.1.
+        # From material: Annual revenue-12 = 5605, Average stock-12 = 1830 → 3.1.
         assert stock_turn_ratio(5605.0, 1830.0) == pytest.approx(3.06, abs=0.01)
 
     def test_coverage_days(self) -> None:

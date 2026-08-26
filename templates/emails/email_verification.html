@@ -1,12 +1,12 @@
 {% extends "emails/base.html" %}
 
-{% block subject %}Verifica tu correo electrónico{% endblock %}
+{% block subject %}Verify your email{% endblock %}
 
 {% block content %}
-<h1>Verifica tu correo electrónico</h1>
+<h1>Verify your email</h1>
 <p>Para completar tu registro, haz clic en el siguiente enlace:</p>
-<p><a href="{{ verification_link }}" class="button">Verificar correo</a></p>
+<p><a href="{{ verification_link }}" class="button">Verify email</a></p>
 <p>O copia este enlace:</p>
 <p>{{ verification_link }}</p>
-<p>Este enlace expirará en 24 horas.</p>
+<p>This link will expire in 24 hours.</p>
 {% endblock %}

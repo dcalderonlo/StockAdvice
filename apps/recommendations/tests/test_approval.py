@@ -80,7 +80,7 @@ def pending_recommendation(tenant, branch, part, branch_manager):
         state=RecommendationState.PENDING,
         quantity=Decimal("12.00"),
         current_stock=Decimal("15.00"),
-        punto_pedido=Decimal("47.00"),
+        reorder_point=Decimal("47.00"),
         planning_target=Decimal("37.00"),
         velocity=Decimal("20.00"),
     )
@@ -97,7 +97,7 @@ def approved_recommendation(tenant, branch, part, branch_manager):
         state=RecommendationState.APPROVED,
         quantity=Decimal("12.00"),
         current_stock=Decimal("15.00"),
-        punto_pedido=Decimal("47.00"),
+        reorder_point=Decimal("47.00"),
         planning_target=Decimal("37.00"),
         velocity=Decimal("20.00"),
         decided_by=branch_manager,
@@ -156,7 +156,7 @@ class TestBulkActions:
             run_date=date.today(),
             quantity=Decimal("10.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -168,7 +168,7 @@ class TestBulkActions:
             run_date=date.today(),
             quantity=Decimal("5.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -193,7 +193,7 @@ class TestBulkActions:
             run_date=date.today(),
             quantity=Decimal("1.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -208,7 +208,7 @@ class TestBulkActions:
             run_date=date.today(),
             quantity=Decimal("2.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -271,7 +271,7 @@ class TestRunRejectionRules:
             run_date=today,
             quantity=Decimal("12.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -307,7 +307,7 @@ class TestDefaultApprover:
             assigned_approver=branch_manager,
             quantity=Decimal("12.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )

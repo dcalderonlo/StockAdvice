@@ -24,10 +24,10 @@ class StockLevel(TenantAwareModel):
     part = models.ForeignKey(
         Part, on_delete=models.CASCADE, related_name="stock_levels"
     )
-    stock_disponible = models.DecimalField(
+    available_stock = models.DecimalField(
         max_digits=12, decimal_places=2, default=Decimal("0")
     )
-    stock_en_transito = models.DecimalField(
+    in_transit_stock = models.DecimalField(
         max_digits=12, decimal_places=2, default=Decimal("0")
     )
     last_synced_at = models.DateTimeField(null=True, blank=True)
@@ -52,17 +52,17 @@ class StockLevel(TenantAwareModel):
 
     @property
     def total_stock(self) -> Decimal:
-        return self.stock_disponible + self.stock_en_transito
+        return self.available_stock + self.in_transit_stock
 
     def clean(self) -> None:
         super().clean()
-        if self.stock_disponible < 0:
+        if self.available_stock < 0:
             raise ValidationError(
-                {"stock_disponible": "Stock disponible cannot be negative."}
+                {"available_stock": "Stock disponible cannot be negative."}
             )
-        if self.stock_en_transito < 0:
+        if self.in_transit_stock < 0:
             raise ValidationError(
-                {"stock_en_transito": "Stock en tránsito cannot be negative."}
+                {"in_transit_stock": "In transit stock cannot be negative."}
             )
 
 
@@ -115,14 +115,14 @@ class StockMovement(TenantAwareModel):
         )
 
 
-class StockEnTransitoStatus(models.TextChoices):
+class InTransitStockStatus(models.TextChoices):
     PENDING = "pending", "Pending"
     IN_TRANSIT = "in_transit", "In Transit"
     RECEIVED = "received", "Received"
     CANCELLED = "cancelled", "Cancelled"
 
 
-class StockEnTransito(TenantAwareModel):
+class InTransitStock(TenantAwareModel):
     """System-initiated inter-branch transfer that is currently in transit."""
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -142,8 +142,8 @@ class StockEnTransito(TenantAwareModel):
     quantity = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(
         max_length=20,
-        choices=StockEnTransitoStatus.choices,
-        default=StockEnTransitoStatus.PENDING,
+        choices=InTransitStockStatus.choices,
+        default=InTransitStockStatus.PENDING,
     )
     expected_arrival = models.DateField()
     actual_arrival = models.DateField(null=True, blank=True)
@@ -177,10 +177,10 @@ class StockEnTransito(TenantAwareModel):
     @transaction.atomic
     def mark_received(self, quantity: Decimal | None = None) -> None:
         """Mark this transfer as received and update the destination StockLevel."""
-        if self.status == StockEnTransitoStatus.RECEIVED:
+        if self.status == InTransitStockStatus.RECEIVED:
             return
 
-        if self.status == StockEnTransitoStatus.CANCELLED:
+        if self.status == InTransitStockStatus.CANCELLED:
             raise ValidationError("Cannot mark a cancelled transfer as received.")
 
         received_quantity = quantity if quantity is not None else self.quantity
@@ -192,19 +192,19 @@ class StockEnTransito(TenantAwareModel):
             branch=self.destination_branch,
             part=self.part,
             defaults={
-                "stock_disponible": Decimal("0"),
-                "stock_en_transito": Decimal("0"),
+                "available_stock": Decimal("0"),
+                "in_transit_stock": Decimal("0"),
             },
         )
 
         # Remove from transit and add to available stock at destination.
-        stock_level.stock_en_transito = max(
-            Decimal("0"), stock_level.stock_en_transito - self.quantity
+        stock_level.in_transit_stock = max(
+            Decimal("0"), stock_level.in_transit_stock - self.quantity
         )
-        stock_level.stock_disponible += received_quantity
+        stock_level.available_stock += received_quantity
         stock_level.last_synced_at = timezone.now()
         stock_level.save()
 
         self.actual_arrival = timezone.now().date()
-        self.status = StockEnTransitoStatus.RECEIVED
+        self.status = InTransitStockStatus.RECEIVED
         self.save()

@@ -90,10 +90,10 @@ Session-based. Login → Django session cookie. Every request checks `request.us
 | **User** | id, email, password_hash, is_active | Has many UserRoles |
 | **Role** | id, name (admin/gerente/coordinator/warehouse_manager) | Has many UserRoles |
 | **UserRole** | id, user_id, role_id, branch_id (optional), scope_json | FK→User, FK→Role, FK→Branch(nullable) |
-| **Branch** | id, tenant_id, name, branch_type (sucursal/centro_distribucion), parent_branch_id | FK→Tenant, self-referential FK |
+| **Branch** | id, tenant_id, name, branch_type (branch/distribution_center), parent_branch_id | FK→Tenant, self-referential FK |
 | **Part** | id, tenant_id, internal_sku_code, primary_mfr_code, alt_mfr_codes (JSONB), description, lead_time_days | FK→Tenant |
 | **CrossReference** | id, part_id, related_part_id, relation_type (substitute/alternative/successor), source_dms | FK→Part×2 |
-| **StockLevel** | id, branch_id, part_id, stock_disponible, stock_en_transito, last_synced_at | FK→Branch, FK→Part |
+| **StockLevel** | id, branch_id, part_id, available_stock, in_transit_stock, last_synced_at | FK→Branch, FK→Part |
 | **StockMovement** | id, branch_id, part_id, movement_type (sale/purchase/transfer), quantity, date | FK→Branch, FK→Part |
 | **Recommendation** | id, branch_id, part_id, quantity, source_type (transfer/supplier), source_branch_id, state (pending/approved/rejected/handled/ordered), classification_code, created_at | FK→Branch, FK→Part |
 | **DemandOverride** | id, part_id, branch_id, override_type (persistent/per_run/with_expiry), quantity, expires_at, created_by | FK→Part, FK→Branch, FK→User |
@@ -101,7 +101,7 @@ Session-based. Login → Django session cookie. Every request checks `request.us
 | **AuditLog** | id, user_id, role_used_id, action, entity_type, entity_id, metadata_json, created_at | FK→User, FK→Role |
 | **SectorConfiguration** | id, tenant_id, sector_key, config_json (terminology, thresholds, classification labels, lifecycle rules) | FK→Tenant |
 
-**Branch → Branch (self-referential)** supports DC topology: `parent_branch_id` links a `sucursal` to its `centro_distribucion`. DCs have `parent_branch_id = NULL`.
+**Branch → Branch (self-referential)** supports DC topology: `parent_branch_id` links a `branch` to its `distribution_center`. DCs have `parent_branch_id = NULL`.
 
 ## 4. DMS Integration
 

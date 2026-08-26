@@ -13,8 +13,8 @@ from .managers import BranchManager
 
 
 class BranchType(models.TextChoices):
-    SUCURSAL = "sucursal", "Sucursal"
-    CENTRO_DISTRIBUCION = "centro_distribucion", "Centro de Distribución"
+    BRANCH = "branch", "Branch"
+    DISTRIBUTION_CENTER = "distribution_center", "Distribution Center"
 
 
 class Branch(TenantAwareModel):
@@ -66,11 +66,11 @@ class Branch(TenantAwareModel):
 
     def clean(self) -> None:
         super().clean()
-        if self.type == BranchType.CENTRO_DISTRIBUCION and self.parent_branch is not None:
+        if self.type == BranchType.DISTRIBUTION_CENTER and self.parent_branch is not None:
             raise ValidationError(
                 {"parent_branch": "A distribution center cannot have a parent branch in v1."}
             )
-        if self.parent_branch and self.parent_branch.type != BranchType.CENTRO_DISTRIBUCION:
+        if self.parent_branch and self.parent_branch.type != BranchType.DISTRIBUTION_CENTER:
             raise ValidationError(
                 {"parent_branch": "A branch can only depend on a distribution center."}
             )
@@ -80,7 +80,7 @@ class Branch(TenantAwareModel):
             )
 
     def is_distribution_center(self) -> bool:
-        return self.type == BranchType.CENTRO_DISTRIBUCION
+        return self.type == BranchType.DISTRIBUTION_CENTER
 
     def is_regular_branch(self) -> bool:
-        return self.type == BranchType.SUCURSAL
+        return self.type == BranchType.BRANCH

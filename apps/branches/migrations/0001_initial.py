@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
                 ('code', models.CharField(help_text='Unique within the tenant, e.g. SUC-001 or CD-001', max_length=50)),
                 ('name', models.CharField(max_length=200)),
-                ('type', models.CharField(choices=[('sucursal', 'Sucursal'), ('centro_distribucion', 'Centro de Distribución')], max_length=20)),
+                ('type', models.CharField(choices=[('branch', 'Branch'), ('distribution_center', 'Distribution Center')], max_length=20)),
                 ('address', models.TextField(blank=True)),
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),

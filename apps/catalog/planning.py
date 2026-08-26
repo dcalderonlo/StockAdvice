@@ -1,18 +1,18 @@
 """Planning calculation engine.
 
 Ports the validated Phase 0 spike formulas to Django. Computes Planning
-Target (PT), Punto de Pedido (PP), Cantidad de Pedido (CP), and excess stock
+Target (PT), Reorder Point (PP), Order Quantity (CP), and excess stock
 per part per branch. The service is side-effect free: it reads stock levels
 but never writes to the database.
 
 Formula baseline (material-aligned, per user decision 2026-08-08):
 
 - Planning Target = (velocity / 30) × (period + security + lead_time)
-- Punto de Pedido   = Planning Target + lead_time (raw numeric addition)
-- Cantidad de Pedido = max(0, Planning Target − stock_disponible − stock_en_transito)
-- Excess stock       = max(0, stock_actual − Punto de Pedido)
+- Reorder Point   = Planning Target + lead_time (raw numeric addition)
+- Order Quantity = max(0, Planning Target − available_stock − in_transit_stock)
+- Excess stock       = max(0, current_stock − Reorder Point)
 
-Planning Target INCLUDES lead time. Punto de Pedido is computed by literally
+Planning Target INCLUDES lead time. Reorder Point is computed by literally
 adding lead time in days to Planning Target in units, matching the source
 material's example.
 """
@@ -53,12 +53,12 @@ class PlanningResult:
     security_days: int
     lead_time_days: int
     planning_target: float  # units
-    punto_pedido: float  # units (raw addition per material convention)
-    stock_disponible: float
-    stock_en_transito: float
-    cantidad_pedido: float  # units to order
+    reorder_point: float  # units (raw addition per material convention)
+    available_stock: float
+    in_transit_stock: float
+    order_quantity: float  # units to order
     excess_stock: float  # available for inter-branch transfer
-    triggered: bool  # True if stock_disponible <= punto_pedido
+    triggered: bool  # True if available_stock <= reorder_point
     calculated_at: datetime
 
     def to_dict(self) -> dict:
@@ -70,10 +70,10 @@ class PlanningResult:
             "security_days": self.security_days,
             "lead_time_days": self.lead_time_days,
             "planning_target": self.planning_target,
-            "punto_pedido": self.punto_pedido,
-            "stock_disponible": self.stock_disponible,
-            "stock_en_transito": self.stock_en_transito,
-            "cantidad_pedido": self.cantidad_pedido,
+            "reorder_point": self.reorder_point,
+            "available_stock": self.available_stock,
+            "in_transit_stock": self.in_transit_stock,
+            "order_quantity": self.order_quantity,
             "excess_stock": self.excess_stock,
             "triggered": self.triggered,
             "calculated_at": self.calculated_at.isoformat(),
@@ -162,21 +162,21 @@ class PlanningCalculator:
     def calculate_cantidad_de_pedido(
         cls,
         planning_target_value: float,
-        stock_disponible: float,
-        stock_en_transito: float,
+        available_stock: float,
+        in_transit_stock: float,
     ) -> float:
-        """Cantidad de Pedido = max(0, PT − disponible − tránsito)."""
+        """Order Quantity = max(0, PT − available − in transit)."""
         return max(
             0.0,
-            planning_target_value - stock_disponible - stock_en_transito,
+            planning_target_value - available_stock - in_transit_stock,
         )
 
     @classmethod
     def calculate_excess_stock(
-        cls, stock_actual: float, punto_pedido_value: float
+        cls, current_stock: float, reorder_point_value: float
     ) -> float:
-        """Excess stock = max(0, stock_actual − Punto de Pedido)."""
-        return max(0.0, stock_actual - punto_pedido_value)
+        """Excess stock = max(0, current_stock − Reorder Point)."""
+        return max(0.0, current_stock - reorder_point_value)
 
     def _read_stock_levels(
         self, part: "Part", branch: Branch
@@ -195,10 +195,10 @@ class PlanningCalculator:
             return 0.0, 0.0
 
         disponible = self._clamp_non_negative(
-            self._to_float(sl.stock_disponible), "stock_disponible"
+            self._to_float(sl.available_stock), "available_stock"
         )
         transito = self._clamp_non_negative(
-            self._to_float(sl.stock_en_transito), "stock_en_transito"
+            self._to_float(sl.in_transit_stock), "in_transit_stock"
         )
         return disponible, transito
 
@@ -207,8 +207,8 @@ class PlanningCalculator:
         part: "Part",
         branch: Branch,
         velocity: Optional[float] = None,
-        stock_disponible: Optional[float] = None,
-        stock_en_transito: Optional[float] = None,
+        available_stock: Optional[float] = None,
+        in_transit_stock: Optional[float] = None,
         period_days: Optional[int] = None,
         security_days: Optional[int] = None,
         run_date: Optional[date] = None,
@@ -221,7 +221,7 @@ class PlanningCalculator:
         velocity:
             Units per month. If ``None`` and no active override exists, the
             value is computed with ``VelocityCalculator``.
-        stock_disponible, stock_en_transito:
+        available_stock, in_transit_stock:
             If ``None``, values are read from ``StockLevel``.
         period_days, security_days:
             If ``None``, tenant defaults are used.
@@ -280,24 +280,24 @@ class PlanningCalculator:
 
         # Resolve stock (read from DB only when not provided).
         read_disponible, read_transito = None, None
-        if stock_disponible is None or stock_en_transito is None:
+        if available_stock is None or in_transit_stock is None:
             read_disponible, read_transito = self._read_stock_levels(part, branch)
 
         disponible = (
-            self._clamp_non_negative(float(stock_disponible), "stock_disponible")
-            if stock_disponible is not None
+            self._clamp_non_negative(float(available_stock), "available_stock")
+            if available_stock is not None
             else read_disponible
         )
         transito = (
-            self._clamp_non_negative(float(stock_en_transito), "stock_en_transito")
-            if stock_en_transito is not None
+            self._clamp_non_negative(float(in_transit_stock), "in_transit_stock")
+            if in_transit_stock is not None
             else read_transito
         )
 
-        stock_actual = disponible + transito
+        current_stock = disponible + transito
 
         cp = self.calculate_cantidad_de_pedido(pt, disponible, transito)
-        excess = self.calculate_excess_stock(stock_actual, pp)
+        excess = self.calculate_excess_stock(current_stock, pp)
         triggered = disponible <= pp
 
         return PlanningResult(
@@ -308,10 +308,10 @@ class PlanningCalculator:
             security_days=security,
             lead_time_days=lead_time,
             planning_target=pt,
-            punto_pedido=pp,
-            stock_disponible=disponible,
-            stock_en_transito=transito,
-            cantidad_pedido=cp,
+            reorder_point=pp,
+            available_stock=disponible,
+            in_transit_stock=transito,
+            order_quantity=cp,
             excess_stock=excess,
             triggered=triggered,
             calculated_at=timezone.now(),
@@ -356,7 +356,7 @@ class PlanningCalculator:
         Raises:
             ValueError: If ``distribution_center`` is not a distribution center.
         """
-        if distribution_center.type != BranchType.CENTRO_DISTRIBUCION:
+        if distribution_center.type != BranchType.DISTRIBUTION_CENTER:
             raise ValueError(
                 f"Branch {distribution_center.code} is not a distribution center"
             )

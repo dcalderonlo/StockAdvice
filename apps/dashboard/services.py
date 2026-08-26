@@ -40,10 +40,10 @@ class DashboardAggregator:
 
         stock_qs = StockLevel.objects.filter(tenant=self.tenant, branch=branch)
         total_stock = stock_qs.aggregate(
-            total=models.Sum("stock_disponible")
+            total=models.Sum("available_stock")
         )["total"] or Decimal("0")
 
-        active_parts = stock_qs.exclude(stock_disponible=0).count()
+        active_parts = stock_qs.exclude(available_stock=0).count()
 
         return {
             "branch_code": branch.code,
@@ -107,11 +107,11 @@ class DashboardAggregator:
                 "part_code": sl.part.internal_sku_code,
                 "part_description": sl.part.description,
                 "branch_code": sl.branch.code,
-                "stock_disponible": float(sl.stock_disponible),
-                "stock_en_transito": float(sl.stock_en_transito),
-                "punto_pedido": float(p.punto_pedido),
+                "available_stock": float(sl.available_stock),
+                "in_transit_stock": float(sl.in_transit_stock),
+                "reorder_point": float(p.reorder_point),
                 "planning_target": float(p.planning_target),
-                "cantidad_pedido": float(p.cantidad_pedido),
+                "order_quantity": float(p.order_quantity),
                 "triggered": p.triggered,
             })
         return results

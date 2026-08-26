@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Iniciar sesión - StockAdvice{% endblock %}
+{% block title %}Log in - StockAdvice{% endblock %}
 
 {% block content %}
-<h1>Iniciar sesión</h1>
+<h1>Log in</h1>
 <form method="post" action="{% url 'login' %}">
   {% csrf_token %}
   {{ form.as_p }}
   <button type="submit">Ingresar</button>
 </form>
-<p><a href="{% url 'accounts:password_reset_request' %}">¿Olvidaste tu contraseña?</a></p>
+<p><a href="{% url 'accounts:password_reset_request' %}">Forgot your password?</a></p>
 {% endblock %}

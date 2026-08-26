@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from django.contrib import admin
 
-from .models import StockEnTransito, StockLevel, StockMovement
+from .models import InTransitStock, StockLevel, StockMovement
 
 
 @admin.register(StockLevel)
@@ -12,8 +12,8 @@ class StockLevelAdmin(admin.ModelAdmin):
     list_display = (
         "branch",
         "part",
-        "stock_disponible",
-        "stock_en_transito",
+        "available_stock",
+        "in_transit_stock",
         "total_stock",
         "last_synced_at",
     )
@@ -42,8 +42,8 @@ class StockMovementAdmin(admin.ModelAdmin):
     date_hierarchy = "movement_date"
 
 
-@admin.register(StockEnTransito)
-class StockEnTransitoAdmin(admin.ModelAdmin):
+@admin.register(InTransitStock)
+class InTransitStockAdmin(admin.ModelAdmin):
     list_display = (
         "source_branch",
         "destination_branch",

@@ -7,7 +7,7 @@ from decimal import Decimal
 
 import pytest
 
-from apps.inventory.models import StockEnTransito, StockLevel, StockMovement
+from apps.inventory.models import InTransitStock, StockLevel, StockMovement
 from apps.inventory.services import InventoryIngestionService
 
 from .factories import BranchFactory, PartFactory, TenantFactory
@@ -37,7 +37,7 @@ def test_sync_stock_creates_stock_levels(branch, parts):
     assert StockLevel.objects.filter(tenant=branch.tenant, branch=branch).count() > 0
 
     level = StockLevel.objects.get(tenant=branch.tenant, branch=branch, part=parts[0])
-    assert level.stock_disponible >= 0
+    assert level.available_stock >= 0
     assert level.last_synced_at is not None
 
 
@@ -86,16 +86,16 @@ def test_sync_sales_idempotent(branch, parts):
 
 
 @pytest.mark.django_db
-def test_sync_purchase_orders_updates_stock_en_transito(branch, parts):
+def test_sync_purchase_orders_updates_in_transit_stock(branch, parts):
     service = InventoryIngestionService(branch.tenant)
     service.sync_purchase_orders(branch.code)
 
-    assert StockEnTransito.objects.filter(
+    assert InTransitStock.objects.filter(
         tenant=branch.tenant, destination_branch=branch
     ).exists()
 
     level = StockLevel.objects.get(tenant=branch.tenant, branch=branch, part=parts[0])
-    assert level.stock_en_transito > 0
+    assert level.in_transit_stock > 0
 
 
 @pytest.mark.django_db
@@ -105,11 +105,11 @@ def test_get_or_create_stock_level_returns_existing(branch, parts):
         tenant=branch.tenant,
         branch=branch,
         part=parts[0],
-        stock_disponible=Decimal("7"),
+        available_stock=Decimal("7"),
     )
     fetched = service.get_or_create_stock_level(branch, parts[0])
     assert fetched == existing
-    assert fetched.stock_disponible == Decimal("7")
+    assert fetched.available_stock == Decimal("7")
 
 
 @pytest.mark.django_db

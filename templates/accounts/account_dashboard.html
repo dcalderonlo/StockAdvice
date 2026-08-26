@@ -6,7 +6,7 @@
 <h1>Mi cuenta</h1>
 
 {% if not user.is_verified %}
-<div class="warning">Tu correo aún no está verificado.</div>
+<div class="warning">Your email is not verified yet.</div>
 {% endif %}
 
 <form method="post">
@@ -24,14 +24,14 @@
   {% endfor %}
 </ul>
 
-<h2>Sucursales asignadas</h2>
+<h2>Assigned branches</h2>
 <ul>
   {% for branch_id in branch_scope %}
   <li>{{ branch_id }}</li>
   {% empty %}
-  <li>Acceso sin límite de sucursal.</li>
+  <li>Unlimited branch access.</li>
   {% endfor %}
 </ul>
 
-<p><a href="{% url 'password_change' %}">Cambiar contraseña</a></p>
+<p><a href="{% url 'password_change' %}">Change password</a></p>
 {% endblock %}

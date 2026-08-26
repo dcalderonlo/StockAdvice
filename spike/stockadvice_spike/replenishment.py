@@ -21,10 +21,10 @@ from stockadvice_spike.entities import (
 )
 from stockadvice_spike.formulas import (
     annual_sales_from_history,
-    cantidad_pedido,
+    order_quantity,
     excess_stock,
     planning_target,
-    punto_pedido,
+    reorder_point,
     velocity,
     volume_class,
 )
@@ -61,13 +61,13 @@ def compute_planning_result(
     pt = planning_target(
         vel, config.period_days, config.security_days, part.lead_time_days
     )
-    pp = punto_pedido(pt, part.lead_time_days)
+    pp = reorder_point(pt, part.lead_time_days)
 
-    disponible = stock_level.stock_disponible if stock_level else 0.0
-    transito = stock_level.stock_en_transito if stock_level else 0.0
+    disponible = stock_level.available_stock if stock_level else 0.0
+    transito = stock_level.in_transit_stock if stock_level else 0.0
     actual = disponible + transito
 
-    cq = cantidad_pedido(pt, disponible, transito)
+    cq = order_quantity(pt, disponible, transito)
     excess = excess_stock(actual, pp)
 
     return PlanningResult(
@@ -77,10 +77,10 @@ def compute_planning_result(
         annual_sales=annual,
         volume_class=vc,
         planning_target=pt,
-        punto_pedido=pp,
-        stock_disponible=disponible,
-        stock_en_transito=transito,
-        cantidad_pedido=cq,
+        reorder_point=pp,
+        available_stock=disponible,
+        in_transit_stock=transito,
+        order_quantity=cq,
         excess_stock=excess,
     )
 
@@ -97,7 +97,7 @@ def resolve_source(
     """
     destination = result.branch_code
     sku = result.part.internal_sku_code
-    needed = result.cantidad_pedido
+    needed = result.order_quantity
 
     if needed <= 0:
         return Recommendation(

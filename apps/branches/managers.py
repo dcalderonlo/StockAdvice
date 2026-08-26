@@ -10,10 +10,10 @@ class BranchQuerySet(models.QuerySet):
         return self.filter(is_active=True)
 
     def distribution_centers(self) -> "BranchQuerySet":
-        return self.filter(type="centro_distribucion")
+        return self.filter(type="distribution_center")
 
     def regular(self) -> "BranchQuerySet":
-        return self.filter(type="sucursal")
+        return self.filter(type="branch")
 
 
 class BranchManager(models.Manager):

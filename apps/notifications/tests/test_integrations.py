@@ -51,7 +51,7 @@ def _create_stock(tenant, branch, part, disponible: float) -> StockLevel:
         tenant=tenant,
         branch=branch,
         part=part,
-        stock_disponible=Decimal(str(disponible)),
+        available_stock=Decimal(str(disponible)),
     )
 
 
@@ -90,7 +90,7 @@ def branch(tenant, manager, coordinator):
         tenant=tenant,
         code="SUC-001",
         name="Branch One",
-        type="sucursal",
+        type="branch",
         manager=manager,
         coordinator=coordinator,
     )
@@ -138,7 +138,7 @@ def test_escalation_creates_escalated_notification(tenant, branch, part, coordin
         state=RecommendationState.PENDING,
         quantity=Decimal("150.00"),
         current_stock=Decimal("15.00"),
-        punto_pedido=Decimal("47.00"),
+        reorder_point=Decimal("47.00"),
         planning_target=Decimal("37.00"),
         velocity=Decimal("20.00"),
     )
@@ -173,7 +173,7 @@ def test_approval_creates_approved_notification(tenant, branch, part, manager):
         run_date=date.today(),
         quantity=Decimal("12.00"),
         current_stock=Decimal("15.00"),
-        punto_pedido=Decimal("47.00"),
+        reorder_point=Decimal("47.00"),
         planning_target=Decimal("37.00"),
         velocity=Decimal("20.00"),
     )

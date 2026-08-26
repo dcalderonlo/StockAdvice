@@ -234,8 +234,8 @@ class TestPlanningIntegration:
         result = calculator.calculate_for_part(
             part=part,
             branch=branch,
-            stock_disponible=0.0,
-            stock_en_transito=0.0,
+            available_stock=0.0,
+            in_transit_stock=0.0,
             period_days=30,
             security_days=0,
         )
@@ -252,8 +252,8 @@ class TestPlanningIntegration:
             part=part,
             branch=branch,
             velocity=12.0,
-            stock_disponible=0.0,
-            stock_en_transito=0.0,
+            available_stock=0.0,
+            in_transit_stock=0.0,
             period_days=30,
             security_days=0,
         )

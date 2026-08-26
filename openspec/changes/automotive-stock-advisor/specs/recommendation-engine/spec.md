@@ -68,13 +68,13 @@ When total excess stock across all candidate branches is less than the recommend
 For branches dependent on a DC, the system **shall** first check the parent DC for excess stock. If the DC lacks sufficient stock, the system **shall** search other branches (not just the DC's children) for excess stock.
 
 #### Scenario: DC fulfills dependent branch
-- GIVEN a sucursal needs 10 units of SKU-X
+- GIVEN a branch needs 10 units of SKU-X
 - AND its parent DC has excess of 15 units of SKU-X
 - WHEN the system resolves the source
-- THEN the system recommends a transfer from the DC to the sucursal
+- THEN the system recommends a transfer from the DC to the branch
 
 #### Scenario: DC insufficient, other branches searched
-- GIVEN a sucursal needs 25 units of SKU-X
+- GIVEN a branch needs 25 units of SKU-X
 - AND its parent DC has excess of only 10 units
 - AND another branch (not in the same DC group) has excess of 20 units
 - WHEN the system resolves the source

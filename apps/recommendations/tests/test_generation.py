@@ -58,8 +58,8 @@ def create_stock(tenant, branch, part, disponible: float, transito: float = 0.0)
         tenant=tenant,
         branch=branch,
         part=part,
-        stock_disponible=Decimal(str(disponible)),
-        stock_en_transito=Decimal(str(transito)),
+        available_stock=Decimal(str(disponible)),
+        in_transit_stock=Decimal(str(transito)),
     )
 
 
@@ -198,7 +198,7 @@ class TestGenerateForTenant:
 class TestGenerateForDc:
     def test_dc_recommendation_aggregates_dependent_velocity(self, tenant):
         dc = BranchFactory(
-            tenant=tenant, code="DC-001", type=BranchType.CENTRO_DISTRIBUCION
+            tenant=tenant, code="DC-001", type=BranchType.DISTRIBUTION_CENTER
         )
         dependent = BranchFactory(tenant=tenant, code="SUC-A", parent_branch=dc)
         part = PartFactory(tenant=tenant, lead_time_days=10)
@@ -218,7 +218,7 @@ class TestGenerateForDc:
 
     def test_dc_with_no_dependents_uses_own_velocity(self, tenant):
         dc = BranchFactory(
-            tenant=tenant, code="DC-001", type=BranchType.CENTRO_DISTRIBUCION
+            tenant=tenant, code="DC-001", type=BranchType.DISTRIBUTION_CENTER
         )
         part = PartFactory(tenant=tenant, lead_time_days=10)
 
@@ -250,7 +250,7 @@ class TestRecalculateRecommendation:
 
         # Increase stock so it still triggers but quantity changes.
         StockLevel.objects.filter(tenant=tenant, branch=branch, part=part).update(
-            stock_disponible=Decimal("20.00")
+            available_stock=Decimal("20.00")
         )
 
         recalculated = generator.recalculate_recommendation(rec)
@@ -266,7 +266,7 @@ class TestRecalculateRecommendation:
 
         # Add enough stock so it no longer triggers.
         StockLevel.objects.filter(tenant=tenant, branch=branch, part=part).update(
-            stock_disponible=Decimal("200.00")
+            available_stock=Decimal("200.00")
         )
 
         result = generator.recalculate_recommendation(rec)
@@ -281,7 +281,7 @@ class TestRecalculateRecommendation:
             state=RecommendationState.APPROVED,
             quantity=Decimal("12.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )

@@ -103,7 +103,7 @@ class RecommendationGenerator:
         The DC's planning velocity is its own historical sales rate plus the
         sum of the historical sales rates of all dependent branches.
         """
-        if distribution_center.type != BranchType.CENTRO_DISTRIBUCION:
+        if distribution_center.type != BranchType.DISTRIBUTION_CENTER:
             raise ValueError(
                 f"Branch {distribution_center.code} is not a distribution center"
             )
@@ -152,7 +152,7 @@ class RecommendationGenerator:
         branch = recommendation.branch
         part = recommendation.part
 
-        if branch.type == BranchType.CENTRO_DISTRIBUCION:
+        if branch.type == BranchType.DISTRIBUTION_CENTER:
             velocity = self._dc_velocity_for_part(part, branch)
         else:
             velocity = self.velocity_calculator.calculate_for_part(part, branch).velocity
@@ -172,21 +172,21 @@ class RecommendationGenerator:
             velocity=velocity,
         )
 
-        if not planning_result.triggered or planning_result.cantidad_pedido <= 0:
+        if not planning_result.triggered or planning_result.order_quantity <= 0:
             recommendation.delete()
             return None
 
         classification_label = self._classification_label(classification)
-        recommendation.quantity = _to_decimal(planning_result.cantidad_pedido)
-        recommendation.current_stock = _to_decimal(planning_result.stock_disponible)
-        recommendation.punto_pedido = _to_decimal(planning_result.punto_pedido)
+        recommendation.quantity = _to_decimal(planning_result.order_quantity)
+        recommendation.current_stock = _to_decimal(planning_result.available_stock)
+        recommendation.reorder_point = _to_decimal(planning_result.reorder_point)
         recommendation.planning_target = _to_decimal(planning_result.planning_target)
         recommendation.velocity = _to_decimal(velocity)
         recommendation.classification = classification_label
         recommendation.explanation = (
-            f"Stock {planning_result.stock_disponible:.1f} ≤ PP "
-            f"{planning_result.punto_pedido:.1f}. "
-            f"Recommended {planning_result.cantidad_pedido:.1f} units. "
+            f"Stock {planning_result.available_stock:.1f} ≤ PP "
+            f"{planning_result.reorder_point:.1f}. "
+            f"Recommended {planning_result.order_quantity:.1f} units. "
             f"Class: {classification_label}."
         )
         recommendation.save()
@@ -259,7 +259,7 @@ class RecommendationGenerator:
             velocity=velocity_result.velocity,
         )
 
-        if not planning_result.triggered or planning_result.cantidad_pedido <= 0:
+        if not planning_result.triggered or planning_result.order_quantity <= 0:
             return None
 
         return self._create_recommendation(
@@ -307,7 +307,7 @@ class RecommendationGenerator:
             velocity=velocity,
         )
 
-        if not planning_result.triggered or planning_result.cantidad_pedido <= 0:
+        if not planning_result.triggered or planning_result.order_quantity <= 0:
             return None
 
         return self._create_recommendation(
@@ -363,9 +363,9 @@ class RecommendationGenerator:
         classification_label = self._classification_label(classification)
 
         explanation = (
-            f"Stock {planning_result.stock_disponible:.1f} ≤ PP "
-            f"{planning_result.punto_pedido:.1f}. "
-            f"Recommended {planning_result.cantidad_pedido:.1f} units. "
+            f"Stock {planning_result.available_stock:.1f} ≤ PP "
+            f"{planning_result.reorder_point:.1f}. "
+            f"Recommended {planning_result.order_quantity:.1f} units. "
             f"Class: {classification_label}."
         )
 
@@ -376,11 +376,11 @@ class RecommendationGenerator:
             state=RecommendationState.PENDING,
             assigned_approver=branch.manager,
             run_date=run_date,
-            quantity=_to_decimal(planning_result.cantidad_pedido),
+            quantity=_to_decimal(planning_result.order_quantity),
             source_type="external_supplier",
             source_branch=None,
-            current_stock=_to_decimal(planning_result.stock_disponible),
-            punto_pedido=_to_decimal(planning_result.punto_pedido),
+            current_stock=_to_decimal(planning_result.available_stock),
+            reorder_point=_to_decimal(planning_result.reorder_point),
             planning_target=_to_decimal(planning_result.planning_target),
             explanation=explanation,
             classification=classification_label,
@@ -399,7 +399,7 @@ class RecommendationGenerator:
             branch=branch.code,
             part=part.internal_sku_code,
             quantity=str(rec.quantity),
-            pp=str(rec.punto_pedido),
+            pp=str(rec.reorder_point),
             source_type=rec.source_type,
             is_partial=rec.is_partial,
             escalation_level=rec.escalation_level,
