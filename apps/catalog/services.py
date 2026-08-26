@@ -105,7 +105,7 @@ class VelocityCalculator:
     def calculate_stock_turn_ratio(
         annual_sales: float, average_stock_value: float
     ) -> float:
-        """Rotación de Stock = annual sales / average stock value."""
+        """Stock turnover = annual sales / average stock value."""
         if average_stock_value <= 0:
             return 0.0
         return annual_sales / average_stock_value
@@ -114,7 +114,7 @@ class VelocityCalculator:
     def calculate_coverage_days(
         cls, annual_sales: float, average_stock_value: float
     ) -> float:
-        """Cobertura = 365 / Stock Turn Ratio."""
+        """Coverage = 365 / Stock Turn Ratio."""
         str_ratio = cls.calculate_stock_turn_ratio(annual_sales, average_stock_value)
         if str_ratio <= 0:
             return 0.0
@@ -180,7 +180,7 @@ class VelocityCalculator:
         else:
             qs = qs.filter(branch__in=branches)
 
-        avg = qs.aggregate(avg=models.Avg("stock_disponible"))["avg"] or Decimal("0")
+        avg = qs.aggregate(avg=models.Avg("available_stock"))["avg"] or Decimal("0")
         return float(avg)
 
     def _build_result(
@@ -272,7 +272,7 @@ class VelocityCalculator:
         Raises:
             ValueError: If the provided branch is not a distribution center.
         """
-        if distribution_center.type != BranchType.CENTRO_DISTRIBUCION:
+        if distribution_center.type != BranchType.DISTRIBUTION_CENTER:
             raise ValueError(
                 f"Branch {distribution_center.code} is not a distribution center"
             )

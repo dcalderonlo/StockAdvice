@@ -62,7 +62,7 @@ class UserAdmin(BaseUserAdmin):
         if has_conflict_of_interest(obj):
             messages.warning(
                 request,
-                "Advertencia: este usuario tiene roles que pueden generar conflicto de intereses.",
+                "Warning: this user has roles that may create a conflict of interest.",
             )
 
     @admin.action(description="Disable selected users")
@@ -97,7 +97,7 @@ class InvitationAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         if not change:
             services.send_invitation_email(obj, request)
-            messages.success(request, "Invitación enviada por correo.")
+            messages.success(request, "Invitation sent by email.")
 
     def get_changeform_initial_data(self, request: HttpRequest) -> dict:
         return {"invited_by": request.user, "tenant": request.user.tenant}

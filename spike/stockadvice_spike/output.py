@@ -55,9 +55,9 @@ def render_console(recommendations: Iterable[Recommendation]) -> str:
             f"{rec.part.internal_sku_code:<10} "
             f"{rec.part.description:<28} "
             f"{result.volume_class or '-':<5} "
-            f"{_fmt(result.stock_disponible):>8} "
-            f"{_fmt(result.stock_en_transito):>8} "
-            f"{_fmt(result.punto_pedido):>10} "
+            f"{_fmt(result.available_stock):>8} "
+            f"{_fmt(result.in_transit_stock):>8} "
+            f"{_fmt(result.reorder_point):>10} "
             f"{cantidad:>10} "
             f"{_source_label(rec):<30}"
         )
@@ -84,9 +84,9 @@ def render_html(recommendations: Iterable[Recommendation], title: str = "StockAd
             f"<td>{escape(rec.part.internal_sku_code)}</td>"
             f"<td>{escape(rec.part.description)}</td>"
             f"<td>{escape(result.volume_class or '-')}</td>"
-            f"<td class='numeric'>{_fmt(result.stock_disponible)}</td>"
-            f"<td class='numeric'>{_fmt(result.stock_en_transito)}</td>"
-            f"<td class='numeric'>{_fmt(result.punto_pedido)}</td>"
+            f"<td class='numeric'>{_fmt(result.available_stock)}</td>"
+            f"<td class='numeric'>{_fmt(result.in_transit_stock)}</td>"
+            f"<td class='numeric'>{_fmt(result.reorder_point)}</td>"
             f"<td class='numeric'>{cantidad}</td>"
             f"<td>{escape(_source_label(rec))}</td>"
             f"</tr>"
@@ -122,7 +122,7 @@ def render_html(recommendations: Iterable[Recommendation], title: str = "StockAd
           <th>Description</th>
           <th>Volume Class</th>
           <th class="numeric">Stock Actual</th>
-          <th class="numeric">Stock en Tránsito</th>
+          <th class="numeric">In Transit Stock</th>
           <th class="numeric">Punto de Pedido</th>
           <th class="numeric">Cantidad de Pedido</th>
           <th>Source</th>

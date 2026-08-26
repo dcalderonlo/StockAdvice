@@ -54,7 +54,7 @@ def send_invitation_email(invitation: Invitation, request) -> int:
     )
     return send_email(
         to_email=invitation.email,
-        subject="Has sido invitado a StockAdvice",
+        subject="You have been invited to StockAdvice",
         template_name="invitation",
         context={
             "invitation": invitation,
@@ -130,7 +130,7 @@ def send_verification_email(verification: EmailVerification, request) -> int:
     )
     return send_email(
         to_email=verification.user.email,
-        subject="Verifica tu correo electrónico - StockAdvice",
+        subject="Verify your email - StockAdvice",
         template_name="email_verification",
         context={"verification": verification, "verification_link": link},
     )
@@ -165,7 +165,7 @@ def send_password_reset_email(reset: PasswordReset, request) -> int:
     )
     return send_email(
         to_email=reset.user.email,
-        subject="Restablece tu contraseña - StockAdvice",
+        subject="Reset your password - StockAdvice",
         template_name="password_reset",
         context={"reset": reset, "reset_link": link},
     )

@@ -66,14 +66,14 @@ def test_inter_branch_transfer_source_resolution() -> None:
     config = BranchConfig(branch_code="DEST", period_days=30, security_days=10)
 
     # Destination: low stock, high velocity → big recommendation.
-    dest_stock = StockLevel(part, "DEST", stock_disponible=5.0, stock_en_transito=0.0)
+    dest_stock = StockLevel(part, "DEST", available_stock=5.0, in_transit_stock=0.0)
     movements = [
         SalesMovement(part, "DEST", month_index=i, quantity=20)
         for i in range(12)
     ]
 
     # Source: surplus stock.
-    source_stock = StockLevel(part, "SOURCE", stock_disponible=200.0, stock_en_transito=0.0)
+    source_stock = StockLevel(part, "SOURCE", available_stock=200.0, in_transit_stock=0.0)
     # Source needs its own sales history so it has a Punto de Pedido and excess.
     source_movements = [
         SalesMovement(part, "SOURCE", month_index=i, quantity=2)

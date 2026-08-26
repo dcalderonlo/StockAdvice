@@ -31,7 +31,7 @@ def account_dashboard(request: HttpRequest) -> HttpResponse:
         form = AccountDashboardForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
-            messages.success(request, "Perfil actualizado.")
+            messages.success(request, "Profile updated.")
             return redirect("accounts:dashboard")
 
     return render(
@@ -137,7 +137,7 @@ def resend_invitation_view(request: HttpRequest, invitation_id: str) -> HttpResp
     invitation = get_object_or_404(Invitation, id=invitation_id)
     services.resend_invitation(invitation)
     services.send_invitation_email(invitation, request)
-    messages.success(request, "Invitación reenviada.")
+    messages.success(request, "Invitation resent.")
     return redirect("admin:accounts_invitation_changelist")
 
 
@@ -145,5 +145,5 @@ def resend_invitation_view(request: HttpRequest, invitation_id: str) -> HttpResp
 def revoke_invitation_view(request: HttpRequest, invitation_id: str) -> HttpResponse:
     invitation = get_object_or_404(Invitation, id=invitation_id)
     services.revoke_invitation(invitation)
-    messages.success(request, "Invitación revocada.")
+    messages.success(request, "Invitation revoked.")
     return redirect("admin:accounts_invitation_changelist")

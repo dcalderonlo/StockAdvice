@@ -2,7 +2,7 @@
 
 Determines the source(s) for a replenishment recommendation, prioritising
 inter-branch transfers over external supplier orders. A branch can only transfer
-up to its excess stock = max(0, stock_actual - Punto de Pedido), ensuring the
+up to its excess stock = max(0, current_stock - Punto de Pedido), ensuring the
 source branch never falls below its own PP.
 """
 
@@ -133,7 +133,7 @@ class SourceResolutionService:
         branch_ids_with_stock = StockLevel.objects.filter(
             tenant=self.tenant,
             part=part,
-            stock_disponible__gt=0,
+            available_stock__gt=0,
         ).values_list("branch_id", flat=True)
 
         return list(
@@ -148,7 +148,7 @@ class SourceResolutionService:
         """Excess stock available for transfer from ``branch``.
 
         Uses the validated Phase 0 spike formula exactly:
-        excess_stock = max(0, stock_actual - Punto de Pedido).
+        excess_stock = max(0, current_stock - Punto de Pedido).
         """
         try:
             stock_level = StockLevel.objects.get(
@@ -162,13 +162,13 @@ class SourceResolutionService:
             part=part,
             branch=branch,
             velocity=velocity_result.velocity,
-            stock_disponible=float(stock_level.stock_disponible),
-            stock_en_transito=float(stock_level.stock_en_transito),
+            available_stock=float(stock_level.available_stock),
+            in_transit_stock=float(stock_level.in_transit_stock),
         )
 
         excess = PlanningCalculator.calculate_excess_stock(
-            planning_result.stock_disponible + planning_result.stock_en_transito,
-            planning_result.punto_pedido,
+            planning_result.available_stock + planning_result.in_transit_stock,
+            planning_result.reorder_point,
         )
         return Decimal(str(excess))
 

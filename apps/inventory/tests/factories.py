@@ -29,7 +29,7 @@ class BranchFactory(factory.django.DjangoModelFactory):
     tenant = factory.SubFactory(TenantFactory)
     code = factory.Sequence(lambda n: f"SUC-{n:03d}")
     name = factory.Sequence(lambda n: f"Branch {n}")
-    type = BranchType.SUCURSAL
+    type = BranchType.BRANCH
     is_active = True
 
 

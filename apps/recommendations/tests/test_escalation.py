@@ -131,7 +131,7 @@ def base_recommendation(tenant, branch, part):
         assigned_approver=branch.manager,
         quantity=Decimal("12.00"),
         current_stock=Decimal("15.00"),
-        punto_pedido=Decimal("47.00"),
+        reorder_point=Decimal("47.00"),
         planning_target=Decimal("37.00"),
         velocity=Decimal("20.00"),
     )
@@ -236,7 +236,7 @@ class TestCrossCoordinatorPermissions:
             run_date=date.today(),
             quantity=Decimal("10.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -255,7 +255,7 @@ class TestCrossCoordinatorPermissions:
             run_date=date.today(),
             quantity=Decimal("10.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -271,7 +271,7 @@ class TestCrossCoordinatorPermissions:
             run_date=date.today(),
             quantity=Decimal("10.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -289,7 +289,7 @@ class TestCrossCoordinatorPermissions:
             run_date=date.today(),
             quantity=Decimal("10.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -309,7 +309,7 @@ class TestCrossCoordinatorPermissions:
             run_date=date.today(),
             quantity=Decimal("10.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -334,7 +334,7 @@ class TestCrossCoordinatorPermissions:
             run_date=date.today(),
             quantity=Decimal("10.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -355,7 +355,7 @@ class TestApprovalServiceCrossCoordinator:
             run_date=date.today(),
             quantity=Decimal("10.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -375,7 +375,7 @@ class TestApprovalServiceCrossCoordinator:
             run_date=date.today(),
             quantity=Decimal("10.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -395,7 +395,7 @@ class TestApprovalServiceCrossCoordinator:
             run_date=date.today(),
             quantity=Decimal("10.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )

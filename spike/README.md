@@ -2,7 +2,7 @@
 
 A minimal, runnable validation of the core replenishment methodology for the
 StockAdvice project. It proves that the formulas (Planning Target, Punto de
-Pedido, Cantidad de Pedido, Volume Class, excess stock) behave sensibly with
+Pedido, Order Quantity, Volume Class, excess stock) behave sensibly with
 realistic automotive data before investing in Django, PostgreSQL, DMS adapters,
 or the full approval workflow.
 
@@ -51,13 +51,13 @@ python run_html.py -o recommendations.html
 | SKU | Internal catalog code |
 | Description | Human-readable part name |
 | VC | Volume Class (VC1 fastest … VC8 slowest; blank = zero sales) |
-| Stock | Stock Disponible (physically available) |
-| Trans | Stock en Tránsito (inbound) |
-| PP | Punto de Pedido (reorder point) |
-| Cantidad | Cantidad de Pedido (only shown when triggered) |
+| Stock | Available Stock (physically available) |
+| Trans | In Transit Stock (inbound) |
+| PP | Reorder Point (reorder point) |
+| Cantidad | Order Quantity (only shown when triggered) |
 | Source | `Inter-branch transfer from …`, `External supplier`, or `No action` |
 
-A triggered row means `Stock Actual ≤ Punto de Pedido`. The engine then
+A triggered row means `Current Stock ≤ Reorder Point`. The engine then
 recommends enough stock to bring the branch back up to Planning Target,
 accounting for inbound transit.
 
@@ -65,10 +65,10 @@ accounting for inbound transit.
 
 ```
 velocity          = weighted average monthly sales (recent months weighted heavier)
-Planning Target   = (velocity / 30) × (Periodo de Stock + Stock de Seguridad)
-Punto de Pedido   = Planning Target + (velocity / 30) × Tiempo de Pedido
-Cantidad Pedido   = max(0, Planning Target − Stock Disponible − Stock en Tránsito)
-Excess stock      = max(0, Stock Actual − Punto de Pedido)
+Planning Target   = (velocity / 30) × (Stock Period + Safety Stock)
+Reorder Point   = Planning Target + (velocity / 30) × Lead Time
+Order Quantity   = max(0, Planning Target − Available Stock − In Transit Stock)
+Excess stock      = max(0, Current Stock − Reorder Point)
 Volume Class      = VC1..VC8 based on annual sales thresholds
 ```
 
@@ -77,24 +77,24 @@ Volume Class      = VC1..VC8 based on annual sales thresholds
 The Star Cooperation material (used as an internal formula reference) lists the
 following example:
 
-> monthly sales 20, Periodo de Stock 30, Stock de Seguridad 15, Tiempo de Pedido 10  
-> → Planning Target = 37, Punto de Pedido = 47, Cantidad de Pedido = 12
+> monthly sales 20, Stock Period 30, Safety Stock 15, Lead Time 10  
+> → Planning Target = 37, Reorder Point = 47, Order Quantity = 12
 
 Those numbers only work if **Planning Target is interpreted as including lead
-time** (`20/30 × (30+15+10) ≈ 37`) and if **Punto de Pedido adds lead-time days
+time** (`20/30 × (30+15+10) ≈ 37`) and if **Reorder Point adds lead-time days
 directly** (`37 + 10 = 47`). That interpretation is dimensionally inconsistent
 and contradicts the proposal/design-brief definition:
 
-> Planning Target = (ventas_mensuales / 30) × días_del_periodo  
-> Punto de Pedido = Planning Target + Lead Time
+> Planning Target = (monthly_sales / 30) × period_days  
+> Reorder Point = Planning Target + Lead Time
 
 This spike follows the **proposal/design-brief interpretation**, which gives:
 
 | Metric | Proposal-aligned | Material example |
 |--------|------------------|------------------|
 | Planning Target | 30.0 | 37 |
-| Punto de Pedido | 36.7 | 47 |
-| Cantidad de Pedido | 5.0 | 12 |
+| Reorder Point | 36.7 | 47 |
+| Order Quantity | 5.0 | 12 |
 
 The discrepancy is surfaced here so the team can resolve the canonical formula
 before v1. Either interpretation is implementable; the important thing is to
@@ -117,7 +117,7 @@ If this spike is accepted, proceed to the full v1 implementation plan
 
 1. Django scaffold + `core` / `accounts` apps.
 2. `branches` + `catalog` with DMS adapter interface and mock adapter.
-3. `inventory` app: StockLevel, StockMovement, StockEnTransito.
+3. `inventory` app: StockLevel, StockMovement, InTransitStock.
 4. `classification` engine (VC1–VC8, Lifecycle Stage).
 5. `replenishment` engine with real source resolution and approval workflow.
 6. `notifications` + `dashboard` with role-based views.
@@ -125,7 +125,7 @@ If this spike is accepted, proceed to the full v1 implementation plan
 
 Resolve before v1:
 
-- The Planning Target / Punto de Pedido interpretation discrepancy documented
+- The Planning Target / Reorder Point interpretation discrepancy documented
   above.
 - Exact weighted-velocity weights (spike uses linear 0.5→1.5).
-- Default Periodo de Stock, Stock de Seguridad, and Tiempo de Pedido values.
+- Default Stock Period, Safety Stock, and Lead Time values.

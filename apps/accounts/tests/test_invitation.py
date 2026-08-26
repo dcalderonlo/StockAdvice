@@ -92,4 +92,4 @@ class TestInvitationViews:
     def test_invalid_invitation_token(self, client):
         response = client.get("/accounts/invite/not-a-token/")
         assert response.status_code == 200
-        assert b"Invitaci" in response.content
+        assert b"Invalid invitation" in response.content

@@ -58,8 +58,8 @@ def create_stock(tenant, branch, part, disponible: float, transito: float = 0.0)
         tenant=tenant,
         branch=branch,
         part=part,
-        stock_disponible=Decimal(str(disponible)),
-        stock_en_transito=Decimal(str(transito)),
+        available_stock=Decimal(str(disponible)),
+        in_transit_stock=Decimal(str(transito)),
     )
 
 
@@ -211,7 +211,7 @@ class TestSourceResolutionService:
         assert rec.source_branch is None
 
     def test_parent_dc_checked_first(self, tenant, branch, part):
-        dc = BranchFactory(tenant=tenant, code="DC-001", type=BranchType.CENTRO_DISTRIBUCION)
+        dc = BranchFactory(tenant=tenant, code="DC-001", type=BranchType.DISTRIBUTION_CENTER)
         branch.parent_branch = dc
         branch.save()
 
@@ -249,7 +249,7 @@ class TestSourceResolutionService:
             state=RecommendationState.PENDING,
             quantity=Decimal("10.00"),
             current_stock=Decimal("25.00"),
-            punto_pedido=Decimal("43.33"),
+            reorder_point=Decimal("43.33"),
             planning_target=Decimal("33.33"),
             velocity=Decimal("20.00"),
         )

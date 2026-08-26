@@ -33,8 +33,8 @@ class StockLevel:
 
     part: Part
     branch_code: str
-    stock_disponible: float  # physically available
-    stock_en_transito: float  # inbound, not yet available
+    available_stock: float  # physically available
+    in_transit_stock: float  # inbound, not yet available
 
 
 @dataclass(frozen=True)
@@ -74,10 +74,10 @@ class PlanningResult:
     annual_sales: int  # sum of the 12-month sales history
     volume_class: str  # VC1..VC8
     planning_target: float
-    punto_pedido: float
-    stock_disponible: float
-    stock_en_transito: float
-    cantidad_pedido: float
+    reorder_point: float
+    available_stock: float
+    in_transit_stock: float
+    order_quantity: float
     excess_stock: float
 
 

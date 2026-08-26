@@ -23,7 +23,7 @@ class RecommendationAdmin(admin.ModelAdmin):
         "is_partial",
         "partial_gap",
         "current_stock",
-        "punto_pedido",
+        "reorder_point",
         "created_at",
         "decided_at",
         "escalated_at",

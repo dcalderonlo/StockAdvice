@@ -74,7 +74,7 @@ class TestRequestContextMiddleware:
             tenant=tenant,
             code="SUC-001",
             name="Main Branch",
-            type=BranchType.SUCURSAL,
+            type=BranchType.BRANCH,
             manager=user,
         )
         request = RequestFactory().get("/")

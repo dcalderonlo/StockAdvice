@@ -8,8 +8,8 @@ import pytest
 from django.core.exceptions import ValidationError
 
 from apps.inventory.models import (
-    StockEnTransito,
-    StockEnTransitoStatus,
+    InTransitStock,
+    InTransitStockStatus,
     StockLevel,
     StockMovement,
     StockMovementType,
@@ -39,8 +39,8 @@ def test_stock_level_total_stock(branch, part):
         tenant=branch.tenant,
         branch=branch,
         part=part,
-        stock_disponible=Decimal("15"),
-        stock_en_transito=Decimal("10"),
+        available_stock=Decimal("15"),
+        in_transit_stock=Decimal("10"),
     )
     assert level.total_stock == Decimal("25")
 
@@ -51,24 +51,24 @@ def test_stock_level_unique_per_tenant_branch_part(branch, part):
         tenant=branch.tenant,
         branch=branch,
         part=part,
-        stock_disponible=Decimal("5"),
+        available_stock=Decimal("5"),
     )
     with pytest.raises(Exception):
         StockLevel.objects.create(
             tenant=branch.tenant,
             branch=branch,
             part=part,
-            stock_disponible=Decimal("3"),
+            available_stock=Decimal("3"),
         )
 
 
 @pytest.mark.django_db
-def test_stock_level_negative_stock_disponible_raises(branch, part):
+def test_stock_level_negative_available_stock_raises(branch, part):
     level = StockLevel(
         tenant=branch.tenant,
         branch=branch,
         part=part,
-        stock_disponible=Decimal("-1"),
+        available_stock=Decimal("-1"),
     )
     with pytest.raises(ValidationError):
         level.full_clean()
@@ -129,16 +129,16 @@ def test_stock_movement_return_is_inflow(branch, part):
 
 
 @pytest.mark.django_db
-def test_stock_en_transito_mark_received_updates_stock_level(branch, part):
+def test_in_transit_stock_mark_received_updates_stock_level(branch, part):
     destination = BranchFactory(tenant=branch.tenant, code="DEST-001")
     level = StockLevel.objects.create(
         tenant=branch.tenant,
         branch=destination,
         part=part,
-        stock_disponible=Decimal("5"),
-        stock_en_transito=Decimal("10"),
+        available_stock=Decimal("5"),
+        in_transit_stock=Decimal("10"),
     )
-    transfer = StockEnTransito.objects.create(
+    transfer = InTransitStock.objects.create(
         tenant=branch.tenant,
         source_branch=branch,
         destination_branch=destination,
@@ -150,23 +150,23 @@ def test_stock_en_transito_mark_received_updates_stock_level(branch, part):
     transfer.mark_received()
 
     level.refresh_from_db()
-    assert level.stock_disponible == Decimal("15")
-    assert level.stock_en_transito == Decimal("0")
-    assert transfer.status == StockEnTransitoStatus.RECEIVED
+    assert level.available_stock == Decimal("15")
+    assert level.in_transit_stock == Decimal("0")
+    assert transfer.status == InTransitStockStatus.RECEIVED
     assert transfer.actual_arrival is not None
 
 
 @pytest.mark.django_db
-def test_stock_en_transito_mark_received_partial_quantity(branch, part):
+def test_in_transit_stock_mark_received_partial_quantity(branch, part):
     destination = BranchFactory(tenant=branch.tenant, code="DEST-002")
     level = StockLevel.objects.create(
         tenant=branch.tenant,
         branch=destination,
         part=part,
-        stock_disponible=Decimal("5"),
-        stock_en_transito=Decimal("10"),
+        available_stock=Decimal("5"),
+        in_transit_stock=Decimal("10"),
     )
-    transfer = StockEnTransito.objects.create(
+    transfer = InTransitStock.objects.create(
         tenant=branch.tenant,
         source_branch=branch,
         destination_branch=destination,
@@ -178,13 +178,13 @@ def test_stock_en_transito_mark_received_partial_quantity(branch, part):
     transfer.mark_received(quantity=Decimal("7"))
 
     level.refresh_from_db()
-    assert level.stock_disponible == Decimal("12")
-    assert level.stock_en_transito == Decimal("0")
+    assert level.available_stock == Decimal("12")
+    assert level.in_transit_stock == Decimal("0")
 
 
 @pytest.mark.django_db
-def test_stock_en_transito_same_source_destination_invalid(branch, part):
-    transfer = StockEnTransito(
+def test_in_transit_stock_same_source_destination_invalid(branch, part):
+    transfer = InTransitStock(
         tenant=branch.tenant,
         source_branch=branch,
         destination_branch=branch,
@@ -197,9 +197,9 @@ def test_stock_en_transito_same_source_destination_invalid(branch, part):
 
 
 @pytest.mark.django_db
-def test_stock_en_transito_zero_quantity_invalid(branch, part):
+def test_in_transit_stock_zero_quantity_invalid(branch, part):
     destination = BranchFactory(tenant=branch.tenant, code="DEST-003")
-    transfer = StockEnTransito(
+    transfer = InTransitStock(
         tenant=branch.tenant,
         source_branch=branch,
         destination_branch=destination,

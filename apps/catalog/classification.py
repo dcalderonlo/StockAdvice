@@ -178,7 +178,7 @@ class ClassificationEngine:
         qs = StockLevel.objects.filter(tenant=self.tenant, part=part)
         if branch is not None:
             qs = qs.filter(branch=branch)
-        total = qs.aggregate(total=models.Sum("stock_disponible"))["total"] or Decimal(
+        total = qs.aggregate(total=models.Sum("available_stock"))["total"] or Decimal(
             "0"
         )
         return total > 0

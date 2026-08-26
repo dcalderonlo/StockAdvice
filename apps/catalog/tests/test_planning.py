@@ -72,8 +72,8 @@ def create_stock(
         tenant=tenant,
         branch=branch,
         part=part,
-        stock_disponible=Decimal(str(disponible)),
-        stock_en_transito=Decimal(str(transito)),
+        available_stock=Decimal(str(disponible)),
+        in_transit_stock=Decimal(str(transito)),
     )
 
 
@@ -100,8 +100,8 @@ class TestPlanningTarget:
             part=part,
             branch=branch,
             velocity=20.0,
-            stock_disponible=15.0,
-            stock_en_transito=10.0,
+            available_stock=15.0,
+            in_transit_stock=10.0,
             period_days=30,
             security_days=15,
         )
@@ -118,8 +118,8 @@ class TestPlanningTarget:
             part=part,
             branch=branch,
             velocity=12.0,
-            stock_disponible=9.0,
-            stock_en_transito=20.0,
+            available_stock=9.0,
+            in_transit_stock=20.0,
             period_days=44,
             security_days=22,
         )
@@ -133,13 +133,13 @@ class TestPlanningTarget:
             part=part,
             branch=branch,
             velocity=0.0,
-            stock_disponible=5.0,
-            stock_en_transito=0.0,
+            available_stock=5.0,
+            in_transit_stock=0.0,
         )
 
         assert result.planning_target == 0.0
-        assert result.punto_pedido == pytest.approx(float(part.lead_time_days))
-        assert result.cantidad_pedido == 0.0
+        assert result.reorder_point == pytest.approx(float(part.lead_time_days))
+        assert result.order_quantity == 0.0
 
     @pytest.mark.django_db
     def test_negative_velocity_is_clamped(self, tenant, part, branch):
@@ -148,8 +148,8 @@ class TestPlanningTarget:
             part=part,
             branch=branch,
             velocity=-5.0,
-            stock_disponible=5.0,
-            stock_en_transito=0.0,
+            available_stock=5.0,
+            in_transit_stock=0.0,
             period_days=30,
             security_days=10,
         )
@@ -166,14 +166,14 @@ class TestPlanningTarget:
             part=part,
             branch=branch,
             velocity=20.0,
-            stock_disponible=0.0,
-            stock_en_transito=0.0,
+            available_stock=0.0,
+            in_transit_stock=0.0,
             period_days=30,
             security_days=15,
         )
 
         assert result.planning_target == pytest.approx(30.0, abs=0.01)
-        assert result.punto_pedido == pytest.approx(30.0, abs=0.01)
+        assert result.reorder_point == pytest.approx(30.0, abs=0.01)
 
 
 class TestPuntoDePedido:
@@ -184,13 +184,13 @@ class TestPuntoDePedido:
             part=part,
             branch=branch,
             velocity=20.0,
-            stock_disponible=15.0,
-            stock_en_transito=10.0,
+            available_stock=15.0,
+            in_transit_stock=10.0,
             period_days=30,
             security_days=15,
         )
 
-        assert result.punto_pedido == pytest.approx(46.67, abs=0.01)
+        assert result.reorder_point == pytest.approx(46.67, abs=0.01)
 
     @pytest.mark.django_db
     def test_material_example_two(self, tenant, part, branch):
@@ -201,13 +201,13 @@ class TestPuntoDePedido:
             part=part,
             branch=branch,
             velocity=12.0,
-            stock_disponible=9.0,
-            stock_en_transito=20.0,
+            available_stock=9.0,
+            in_transit_stock=20.0,
             period_days=44,
             security_days=22,
         )
 
-        assert result.punto_pedido == pytest.approx(41.8, abs=0.01)
+        assert result.reorder_point == pytest.approx(41.8, abs=0.01)
 
 
 class TestCantidadDePedido:
@@ -218,13 +218,13 @@ class TestCantidadDePedido:
             part=part,
             branch=branch,
             velocity=20.0,
-            stock_disponible=15.0,
-            stock_en_transito=10.0,
+            available_stock=15.0,
+            in_transit_stock=10.0,
             period_days=30,
             security_days=15,
         )
 
-        assert result.cantidad_pedido == pytest.approx(11.67, abs=0.01)
+        assert result.order_quantity == pytest.approx(11.67, abs=0.01)
 
     @pytest.mark.django_db
     def test_cantidad_is_zero_when_stock_exceeds_target(self, tenant, part, branch):
@@ -233,13 +233,13 @@ class TestCantidadDePedido:
             part=part,
             branch=branch,
             velocity=10.0,
-            stock_disponible=20.0,
-            stock_en_transito=0.0,
+            available_stock=20.0,
+            in_transit_stock=0.0,
             period_days=30,
             security_days=0,
         )
 
-        assert result.cantidad_pedido == 0.0
+        assert result.order_quantity == 0.0
 
     @pytest.mark.django_db
     def test_cantidad_accounts_for_transit(self, tenant, part, branch):
@@ -248,15 +248,15 @@ class TestCantidadDePedido:
             part=part,
             branch=branch,
             velocity=30.0,
-            stock_disponible=70.0,
-            stock_en_transito=20.0,
+            available_stock=70.0,
+            in_transit_stock=20.0,
             period_days=30,
             security_days=0,
         )
 
         # With stock (70) + transit (20) = 90, and PT = (30/30) × (30+0+10) = 40,
         # CP = max(0, 40 - 90) = 0 (transit is accounted for, no need to order)
-        assert result.cantidad_pedido == 0.0
+        assert result.order_quantity == 0.0
 
 
 class TestExcessStock:
@@ -267,15 +267,15 @@ class TestExcessStock:
             part=part,
             branch=branch,
             velocity=10.0,
-            stock_disponible=100.0,
-            stock_en_transito=0.0,
+            available_stock=100.0,
+            in_transit_stock=0.0,
             period_days=30,
             security_days=0,
         )
 
         assert result.excess_stock > 0
         assert result.excess_stock == pytest.approx(
-            100.0 - result.punto_pedido, abs=0.01
+            100.0 - result.reorder_point, abs=0.01
         )
 
     @pytest.mark.django_db
@@ -285,8 +285,8 @@ class TestExcessStock:
             part=part,
             branch=branch,
             velocity=10.0,
-            stock_disponible=float(part.lead_time_days),
-            stock_en_transito=0.0,
+            available_stock=float(part.lead_time_days),
+            in_transit_stock=0.0,
             period_days=0,
             security_days=0,
         )
@@ -300,8 +300,8 @@ class TestExcessStock:
             part=part,
             branch=branch,
             velocity=10.0,
-            stock_disponible=0.0,
-            stock_en_transito=0.0,
+            available_stock=0.0,
+            in_transit_stock=0.0,
             period_days=30,
             security_days=0,
         )
@@ -317,8 +317,8 @@ class TestTrigger:
             part=part,
             branch=branch,
             velocity=20.0,
-            stock_disponible=15.0,
-            stock_en_transito=10.0,
+            available_stock=15.0,
+            in_transit_stock=10.0,
             period_days=30,
             security_days=15,
         )
@@ -336,14 +336,14 @@ class TestTrigger:
             part=part,
             branch=branch,
             velocity=20.0,
-            stock_disponible=46.0,
-            stock_en_transito=0.0,
+            available_stock=46.0,
+            in_transit_stock=0.0,
             period_days=30,
             security_days=15,
         )
 
         # Verify PP is indeed > 46.0 to confirm the test setup
-        assert result.punto_pedido > 46.0
+        assert result.reorder_point > 46.0
         assert result.triggered is True
 
     @pytest.mark.django_db
@@ -353,8 +353,8 @@ class TestTrigger:
             part=part,
             branch=branch,
             velocity=20.0,
-            stock_disponible=100.0,
-            stock_en_transito=0.0,
+            available_stock=100.0,
+            in_transit_stock=0.0,
             period_days=30,
             security_days=15,
         )
@@ -376,9 +376,9 @@ class TestStockReading:
             security_days=15,
         )
 
-        assert result.stock_disponible == 15.0
-        assert result.stock_en_transito == 10.0
-        assert result.cantidad_pedido == pytest.approx(11.67, abs=0.01)
+        assert result.available_stock == 15.0
+        assert result.in_transit_stock == 10.0
+        assert result.order_quantity == pytest.approx(11.67, abs=0.01)
 
     @pytest.mark.django_db
     def test_missing_stock_level_defaults_to_zero(self, tenant, part, branch):
@@ -391,9 +391,9 @@ class TestStockReading:
             security_days=15,
         )
 
-        assert result.stock_disponible == 0.0
-        assert result.stock_en_transito == 0.0
-        assert result.cantidad_pedido == pytest.approx(36.67, abs=0.01)
+        assert result.available_stock == 0.0
+        assert result.in_transit_stock == 0.0
+        assert result.order_quantity == pytest.approx(36.67, abs=0.01)
 
     @pytest.mark.django_db
     def test_negative_stock_is_clamped(self, tenant, part, branch):
@@ -401,8 +401,8 @@ class TestStockReading:
             tenant=tenant,
             branch=branch,
             part=part,
-            stock_disponible=Decimal("-5"),
-            stock_en_transito=Decimal("-3"),
+            available_stock=Decimal("-5"),
+            in_transit_stock=Decimal("-3"),
         )
 
         calculator = PlanningCalculator(tenant)
@@ -414,8 +414,8 @@ class TestStockReading:
             security_days=15,
         )
 
-        assert result.stock_disponible == 0.0
-        assert result.stock_en_transito == 0.0
+        assert result.available_stock == 0.0
+        assert result.in_transit_stock == 0.0
 
 
 class TestTenantConfiguration:
@@ -431,8 +431,8 @@ class TestTenantConfiguration:
             part=part,
             branch=branch,
             velocity=30.0,
-            stock_disponible=0.0,
-            stock_en_transito=0.0,
+            available_stock=0.0,
+            in_transit_stock=0.0,
         )
 
         assert result.period_days == 45
@@ -445,8 +445,8 @@ class TestTenantConfiguration:
             part=part,
             branch=branch,
             velocity=30.0,
-            stock_disponible=0.0,
-            stock_en_transito=0.0,
+            available_stock=0.0,
+            in_transit_stock=0.0,
         )
 
         assert result.period_days == 30
@@ -491,7 +491,7 @@ class TestDcCalculation:
     @pytest.mark.django_db
     def test_dc_planning_aggregates_dependent_velocities(self, tenant):
         dc = BranchFactory(
-            tenant=tenant, code="DC-001", type=BranchType.CENTRO_DISTRIBUCION
+            tenant=tenant, code="DC-001", type=BranchType.DISTRIBUTION_CENTER
         )
         dependent_a = BranchFactory(tenant=tenant, code="SUC-A", parent_branch=dc)
         dependent_b = BranchFactory(tenant=tenant, code="SUC-B", parent_branch=dc)
@@ -518,7 +518,7 @@ class TestDcCalculation:
     @pytest.mark.django_db
     def test_dc_with_no_dependents(self, tenant):
         dc = BranchFactory(
-            tenant=tenant, code="DC-001", type=BranchType.CENTRO_DISTRIBUCION
+            tenant=tenant, code="DC-001", type=BranchType.DISTRIBUTION_CENTER
         )
         part = PartFactory(tenant=tenant, lead_time_days=10)
 
@@ -548,8 +548,8 @@ class TestResultSerialization:
             part=part,
             branch=branch,
             velocity=20.0,
-            stock_disponible=15.0,
-            stock_en_transito=10.0,
+            available_stock=15.0,
+            in_transit_stock=10.0,
             period_days=30,
             security_days=15,
         )
@@ -560,8 +560,8 @@ class TestResultSerialization:
         assert data["branch_id"] == str(branch.id)
         assert data["velocity"] == pytest.approx(20.0)
         assert data["planning_target"] == pytest.approx(36.67, abs=0.01)
-        assert data["punto_pedido"] == pytest.approx(46.67, abs=0.01)
-        assert data["cantidad_pedido"] == pytest.approx(11.67, abs=0.01)
+        assert data["reorder_point"] == pytest.approx(46.67, abs=0.01)
+        assert data["order_quantity"] == pytest.approx(11.67, abs=0.01)
         assert data["triggered"] is True
         assert "calculated_at" in data
 
@@ -577,8 +577,8 @@ class TestTenantIsolation:
             tenant=other_tenant,
             branch=other_branch,
             part=part,
-            stock_disponible=Decimal("99"),
-            stock_en_transito=Decimal("0"),
+            available_stock=Decimal("99"),
+            in_transit_stock=Decimal("0"),
         )
 
         calculator = PlanningCalculator(tenant)
@@ -590,4 +590,4 @@ class TestTenantIsolation:
             security_days=15,
         )
 
-        assert result.stock_disponible == 0.0
+        assert result.available_stock == 0.0

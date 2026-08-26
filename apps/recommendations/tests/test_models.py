@@ -82,7 +82,7 @@ def recommendation(tenant, branch, part):
         state=RecommendationState.PENDING,
         quantity=Decimal("12.00"),
         current_stock=Decimal("15.00"),
-        punto_pedido=Decimal("47.00"),
+        reorder_point=Decimal("47.00"),
         planning_target=Decimal("37.00"),
         explanation="Stock 15.0 ≤ PP 47.0. Recommended 12.0 units.",
         classification="VC3 active",
@@ -161,14 +161,14 @@ class TestRecommendationSnapshotFields:
             part=part,
             quantity=Decimal("12.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
             classification="VC3 active",
         )
 
         assert rec.current_stock == Decimal("15.00")
-        assert rec.punto_pedido == Decimal("47.00")
+        assert rec.reorder_point == Decimal("47.00")
         assert rec.planning_target == Decimal("37.00")
         assert rec.velocity == Decimal("20.00")
 
@@ -180,7 +180,7 @@ class TestRecommendationSnapshotFields:
             state=RecommendationState.PENDING,
             quantity=Decimal("12.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -193,7 +193,7 @@ class TestRecommendationSnapshotFields:
                 state=RecommendationState.PENDING,
                 quantity=Decimal("5.00"),
                 current_stock=Decimal("15.00"),
-                punto_pedido=Decimal("47.00"),
+                reorder_point=Decimal("47.00"),
                 planning_target=Decimal("37.00"),
                 velocity=Decimal("20.00"),
             )
@@ -206,7 +206,7 @@ class TestRecommendationSnapshotFields:
             state=RecommendationState.PENDING,
             quantity=Decimal("12.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -219,7 +219,7 @@ class TestRecommendationSnapshotFields:
             state=RecommendationState.REJECTED,
             quantity=Decimal("12.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("20.00"),
         )
@@ -238,7 +238,7 @@ class TestRecommendationSnapshotFields:
             part=part,
             quantity=Decimal("12.00"),
             current_stock=Decimal("15.00"),
-            punto_pedido=Decimal("47.00"),
+            reorder_point=Decimal("47.00"),
             planning_target=Decimal("37.00"),
             velocity=Decimal("0.00"),
         )
