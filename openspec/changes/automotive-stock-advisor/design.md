@@ -180,7 +180,7 @@ class BaseDMSAdapter(ABC):
 
 - **Rendering**: Server-side Django templates + HTMX. Pico.css for styling (minimal, classless, no build step).
 - **Role-based views**: template conditionals (`{% if user.is_gerente %}`) render different widgets per role.
-- **Widgets per role**: Branch manager sees: pending recs count, KPIs (Stock Total, Rotación, Cobertura, Stock Obsoleto, Stock Excesivo), override log, classification results. Coordinator sees: aggregated KPIs for scope, escalated items, branch activity. Gerente sees: org-wide KPIs, cross-coordinator transfers, classification review queue. Admin sees: all of the above + config panels.
+- **Widgets per role**: Branch manager sees: pending recs count, KPIs (Total Stock, Turnover, Coverage, Obsolete Stock, Excess Stock), override log, classification results. Coordinator sees: aggregated KPIs for scope, escalated items, branch activity. Gerente sees: org-wide KPIs, cross-coordinator transfers, classification review queue. Admin sees: all of the above + config panels.
 - **Refresh**: HTMX `hx-trigger="every 60s"` for KPI tiles. Approval actions refresh inline.
 - **Export**: CSV download for recommendation tables, KPI data. `django-import-export` or plain `csv.writer` via `HttpResponse`.
 
@@ -243,7 +243,7 @@ class BaseDMSAdapter(ABC):
 
 | ID | Question | Resolution criteria |
 |----|----------|---------------------|
-| Q-001 | Exact weighted velocity formula | Choose during Phase 0 spike: test linear decay vs. exponential smoothing against seed data. Pick the one that produces stabler Punto de Pedido. |
+| Q-001 | Exact weighted velocity formula | Choose during Phase 0 spike: test linear decay vs. exponential smoothing against seed data. Pick the one that produces stabler Reorder Point. |
 | Q-002 | Default escalation thresholds | Set initial values during Phase 1 based on automotive aftermarket industry averages (e.g., €5K value threshold, 50-unit volume threshold). Configurable per tenant. |
 | Q-003 | Classification pass: separate or part of run? | Separate (monthly). Replenishment runs weekly; reclassifying on every run is wasteful and produces noise. |
 | Q-004 | First DMS to build adapter for | Deferred until first tenant signs. The `BaseDMSAdapter` interface is designed to be generic; first implementation will validate it. |
@@ -258,7 +258,7 @@ class BaseDMSAdapter(ABC):
 
 Validate the core methodology. No Django. No database. One Python script.
 
-1. **`spike.py`**: Read from a CSV/JSON fixture (50 SKUs, 12 months of sales) → calculate Volume Class + Lifecycle Stage → calculate weighted velocity → calculate Punto de Pedido + Cantidad de Pedido → print recommendations to console.
+1. **`spike.py`**: Read from a CSV/JSON fixture (50 SKUs, 12 months of sales) → calculate Volume Class + Lifecycle Stage → calculate weighted velocity → calculate Reorder Point + Order Quantity → print recommendations to console.
 2. **Goal**: Does the algorithm produce sensible recommendations? Tune formulas here, not in Phase 1.
 3. **Deliverable**: A Python script + fixture data + a 1-page README with findings.
 
@@ -272,7 +272,7 @@ Build in dependency order. Each phase produces a working, demo-able system.
 | 2 | `branches` + `catalog` | Branch model, Part model, DMS adapter interface + mock adapter. Admin can create branches and upload parts CSV. |
 | 3 | `inventory` | StockLevel, StockMovement, StockEnTransito. Mock adapter seeds 12 months of sales. |
 | 4 | `classification` | ClassificationEngine: VC1–VC8 and Lifecycle Stage derivation. ClassificationResult visible in dashboard. |
-| 5 | `replenishment` (engine) | Planning Target, Punto de Pedido, Cantidad de Pedido calculation. Manual trigger from admin panel. |
+| 5 | `replenishment` (engine) | Planning Target, Reorder Point, Order Quantity calculation. Manual trigger from admin panel. |
 | 6 | `replenishment` (recs + source) | Recommendation generation, inter-branch transfer logic, excess stock calculation. |
 | 7 | `replenishment` (workflow) | Approval state machine, escalation, demand override UX with type selection. HTMX interactions. |
 | 8 | `notifications` + `dashboard` | Email templates, in-app notifications, role-based dashboard with KPIs. |

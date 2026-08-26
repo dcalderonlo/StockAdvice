@@ -97,9 +97,9 @@
 **Estimated lines**: ~250  
 **Dependencies**: WU-06  
 **Acceptance criteria**:
-- Planning Target = (velocity / 30) × (Periodo de Stock + Stock de Seguridad + Tiempo de Pedido)
-- Punto de Pedido = Planning Target + Tiempo de Pedido (raw numeric addition)
-- Cantidad de Pedido = max(0, Planning Target − Stock Disponible − Stock en Tránsito)
+- Planning Target = (velocity / 30) × (Stock Period + Safety Stock + Lead Time)
+- Reorder Point = Planning Target + Lead Time (raw numeric addition)
+- Order Quantity = max(0, Planning Target − Available Stock − In Transit Stock)
 - Per-branch and per-supplier lead time supported (most specific wins)
 - DC Planning Target uses aggregated velocity
 
@@ -108,7 +108,7 @@
 **Estimated lines**: ~380  
 **Dependencies**: WU-07, WU-08  
 **Acceptance criteria**:
-- Recommendation triggered when Stock Disponible + Stock en Tránsito ≤ Punto de Pedido
+- Recommendation triggered when Available Stock + In Transit Stock ≤ Reorder Point
 - Recommendation includes: SKU, classification code, quantity, source type, source branch, projected coverage
 - Cold-start SKUs (zero sales history) flagged for manual override, not auto-recommended
 - OBS-R and NS-NS SKUs excluded from automatic recommendations
@@ -119,12 +119,12 @@
 **Estimated lines**: ~380  
 **Dependencies**: WU-09  
 **Acceptance criteria**:
-- Inter-branch transfer checked before external supplier (excess stock = max(0, current_stock − Punto de Pedido))
-- Source branch never falls below its own Punto de Pedido after transfer
+- Inter-branch transfer checked before external supplier (excess stock = max(0, current_stock − Reorder Point))
+- Source branch never falls below its own Reorder Point after transfer
 - Multi-source split: recommendation split across multiple branches when needed
 - Partial fulfillment alert sent to branch manager, coordinator(s), and gerente
 - DC topology: parent DC checked first, then other branches if DC insufficient
-- DC self-replenishment: projected stock after transfers evaluated, external supplier recommended if below Punto de Pedido
+- DC self-replenishment: projected stock after transfers evaluated, external supplier recommended if below Reorder Point
 
 ### WU-11: Approval Workflow — State Machine
 **Tasks**: T-034, T-035, T-036  
@@ -159,7 +159,7 @@
 - Override with expiry automatically reverts after specified date
 - Only branch manager can apply overrides for their branch
 - Override log visible in dashboard with age warnings at 90 days
-- Override affects Planning Target, Punto de Pedido, Cantidad de Pedido calculations
+- Override affects Planning Target, Reorder Point, Order Quantity calculations
 
 ### WU-14: Notification Service
 **Tasks**: T-043, T-044, T-045, T-046  
@@ -182,7 +182,7 @@
 **Dependencies**: WU-11, WU-13, WU-14  
 **Acceptance criteria**:
 - Branch manager sees only own branch data
-- KPI tiles display: Stock Total, Rotación, Cobertura (días), Stock Obsoleto, Stock Excesivo
+- KPI tiles display: Total Stock, Turnover, Coverage (days), Obsolete Stock, Excess Stock
 - Pending recommendations count prominently displayed
 - Approval history visible (approved/rejected/handled/ordered)
 - Override log shows SKU, value, type, date, status, age warnings
@@ -290,9 +290,9 @@
 
 ### Week 5: Planning & Recommendations (WU-08, WU-09)
 **Tasks**: T-024 through T-029  
-**Deliverable**: Planning Target, Punto de Pedido, Cantidad de Pedido, recommendation generation  
+**Deliverable**: Planning Target, Reorder Point, Order Quantity, recommendation generation  
 **Capabilities**: planning-calculation (complete), recommendation-engine (partial)  
-**Demo**: Manual trigger generates recommendations for SKUs below Punto de Pedido
+**Demo**: Manual trigger generates recommendations for SKUs below Reorder Point
 
 ### Week 6: Source Resolution (WU-10)
 **Tasks**: T-030 through T-033  
@@ -496,7 +496,7 @@
 **[x] T-018**: Coverage days and projected demand
 **Capability**: velocity-calculation
 **Work unit**: WU-06
-**Description**: Create VelocityService.calculate_coverage_days(branch_id, part_id) = 365 / Stock Turn Ratio (Ingresos Año-12 / Stock Promedio-12). Avoid division by zero (return 0.0). Create VelocityService.calculate_projected_demand(velocity, period_days) = velocity × (period_days / 30).
+**Description**: Create VelocityService.calculate_coverage_days(branch_id, part_id) = 365 / Stock Turn Ratio (Annual Revenue (Last 12 Months) / Average Stock-12). Avoid division by zero (return 0.0). Create VelocityService.calculate_projected_demand(velocity, period_days) = velocity × (period_days / 30).
 **Files affected**: `apps/catalog/services.py`
 **Complexity**: S (0.5 day)
 **Depends on**: T-017
@@ -554,13 +554,13 @@
 **T-024**: Planning Target calculation  
 **Capability**: planning-calculation  
 **Work unit**: WU-08  
-**Description**: Create PlanningService.calculate_planning_target(branch_id, part_id) = (velocity / 30) × (Periodo de Stock + Stock de Seguridad + Tiempo de Pedido). Clamp negative velocity to 0. Use branch-level defaults for Periodo de Stock, Stock de Seguridad, Tiempo de Pedido (configurable).  
+**Description**: Create PlanningService.calculate_planning_target(branch_id, part_id) = (velocity / 30) × (Stock Period + Safety Stock + Lead Time). Clamp negative velocity to 0. Use branch-level defaults for Stock Period, Safety Stock, Lead Time (configurable).  
 **Files affected**: `apps/replenishment/services.py`  
 **Complexity**: S (0.5 day)  
 **Depends on**: T-017  
 **Acceptance criteria**: velocity=20, period=30, security=15, lead=10 → PT=36.67, negative velocity clamped to 0
 
-**T-025**: Punto de Pedido and Cantidad de Pedido  
+**T-025**: Reorder Point and Order Quantity  
 **Capability**: planning-calculation  
 **Work unit**: WU-08  
 **Description**: Create PlanningService.calculate_punto_de_pedido(planning_target, lead_time_days) = planning_target + lead_time_days (raw numeric addition). Create PlanningService.calculate_cantidad_de_pedido(planning_target, stock_disponible, stock_en_transito) = max(0, planning_target - stock_disponible - stock_en_transito).  
@@ -583,7 +583,7 @@
 **[x] T-027**: Recommendation model and trigger logic  
 **Capability**: recommendation-engine  
 **Work unit**: WU-09  
-**Description**: Create Recommendation model (id, branch_id, part_id, quantity, source_type [transfer/supplier], source_branch_id, state [pending/approved/rejected/handled/ordered], classification_code, created_at, run_date). Create RecommendationService.generate_recommendations(branch_id, run_date) that triggers when Stock Disponible + Stock en Tránsito ≤ Punto de Pedido.  
+**Description**: Create Recommendation model (id, branch_id, part_id, quantity, source_type [transfer/supplier], source_branch_id, state [pending/approved/rejected/handled/ordered], classification_code, created_at, run_date). Create RecommendationService.generate_recommendations(branch_id, run_date) that triggers when Available Stock + In Transit Stock ≤ Reorder Point.  
 **Files affected**: `apps/recommendations/models.py`, `apps/recommendations/migrations/`, `apps/recommendations/services.py`  
 **Complexity**: M (1 day)  
 **Depends on**: T-025, T-020  
@@ -612,7 +612,7 @@
 **T-030**: Excess stock calculation  
 **Capability**: recommendation-engine  
 **Work unit**: WU-10  
-**Description**: Create RecommendationService.calculate_excess_stock(branch_id, part_id) = max(0, current_stock - Punto de Pedido). This is the amount a branch can transfer without falling below its own PP. Query StockLevel for current_stock.  
+**Description**: Create RecommendationService.calculate_excess_stock(branch_id, part_id) = max(0, current_stock - Reorder Point). This is the amount a branch can transfer without falling below its own PP. Query StockLevel for current_stock.  
 **Files affected**: `apps/replenishment/services.py`  
 **Complexity**: S (0.5 day)  
 **Depends on**: T-025  
@@ -776,7 +776,7 @@
 **T-047**: Dashboard base template and KPI tile component  
 **Capability**: dashboard  
 **Work unit**: WU-15  
-**Description**: Create `templates/dashboard/base.html` with Pico.css styling. Create KPI tile component (Stock Total, Rotación, Cobertura, Stock Obsoleto, Stock Excesivo). Add HTMX for auto-refresh every 60 seconds.  
+**Description**: Create `templates/dashboard/base.html` with Pico.css styling. Create KPI tile component (Total Stock, Turnover, Coverage, Obsolete Stock, Excess Stock). Add HTMX for auto-refresh every 60 seconds.  
 **Files affected**: `templates/dashboard/base.html`, `templates/dashboard/components/kpi_tile.html`, `static/css/style.css`  
 **Complexity**: M (1 day)  
 **Depends on**: T-003  
@@ -874,7 +874,7 @@
 **[x] T-057**: Sector-specific terminology and thresholds in engine  
 **Capability**: sector-configuration  
 **Work unit**: WU-17  
-**Description**: Modify ClassificationService to read thresholds from SectorConfiguration.config_json instead of hardcoded values. Modify UI templates to use terminology from config_json. Ensure core formulas (Planning Target, Punto de Pedido, Cantidad de Pedido) remain unchanged.  
+**Description**: Modify ClassificationService to read thresholds from SectorConfiguration.config_json instead of hardcoded values. Modify UI templates to use terminology from config_json. Ensure core formulas (Planning Target, Reorder Point, Order Quantity) remain unchanged.  
 **Files affected**: `apps/classification/services.py`, `templates/**/*.html`  
 **Complexity**: M (1 day)  
 **Depends on**: T-056, T-020  
@@ -1086,7 +1086,7 @@
 | ID | Question | Resolution |
 |----|----------|------------|
 | Q-001 | Exact weighted velocity weights (spike uses linear 0.5→1.5) | Defer to production tuning. Linear ramp is good starting point. Monitor forecast accuracy. |
-| Q-002 | Default Periodo de Stock, Stock de Seguridad, Tiempo de Pedido values | Set initial values during first tenant onboarding based on their historical data. Configurable per branch. |
+| Q-002 | Default Stock Period, Safety Stock, Lead Time values | Set initial values during first tenant onboarding based on their historical data. Configurable per branch. |
 | Q-003 | First DMS target | Deferred until first tenant signs. BaseDMSAdapter interface is generic. First implementation validates it. |
 | Q-004 | Email provider (SendGrid, SES, Postmark) | Pick cheapest with adequate deliverability in tenant's region. SendGrid free tier enough for v1. |
 | Q-005 | Notification throttling strategy | Start with one digest per run + daily 8AM summary. Tune based on user feedback. |
@@ -1103,7 +1103,7 @@
 - [ ] All 14 business rules from proposal §7 implementable
 - [ ] First test run validates end-to-end flow (catalog → velocity → classification → Planning Target → recommendations)
 - [ ] Scheduled jobs run (replenishment weekly, classification monthly)
-- [ ] Dashboard displays KPIs (Stock Total, Rotación, Cobertura, Stock Obsoleto, Stock Excesivo)
+- [ ] Dashboard displays KPIs (Total Stock, Turnover, Coverage, Obsolete Stock, Excess Stock)
 - [ ] Branch manager can approve/reject recommendations
 - [ ] Escalation workflow routes high-impact recommendations to coordinator
 - [ ] Demand override UX prompts for type selection
@@ -1145,8 +1145,8 @@
 
 ### Business Rules Coverage
 1. ✅ Replenishment hierarchy (transfer first → supplier fallback): T-031, T-032
-2. ✅ Punto de Pedido trigger: T-027
-3. ✅ Stock en Tránsito treated separately: T-014, T-025
+2. ✅ Reorder Point trigger: T-027
+3. ✅ In Transit Stock treated separately: T-014, T-025
 4. ✅ Classification is calculated, not manual: T-020, T-021, T-022
 5. ✅ Lifecycle stages drive behavior: T-021, T-022, T-028
 6. ✅ Override UX with mandatory type selection: T-041

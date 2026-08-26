@@ -7,7 +7,7 @@ Provides role-based views for stock health, recommendations, classification resu
 ## Requirements
 
 ### REQ-DS-001: Branch manager view
-The system **shall** display a dashboard for branch managers showing: own branch stock health, pending recommendations count, approval history, override log, classification results, and KPI tiles (Stock Total, Rotación, Cobertura, Stock Obsoleto, Stock Excesivo).
+The system **shall** display a dashboard for branch managers showing: own branch stock health, pending recommendations count, approval history, override log, classification results, and KPI tiles (Total Stock, Turnover, Coverage, Obsolete Stock, Excess Stock).
 
 #### Scenario: Branch manager sees own branch data
 - GIVEN a branch manager logs in
@@ -18,7 +18,7 @@ The system **shall** display a dashboard for branch managers showing: own branch
 #### Scenario: KPI tiles for branch manager
 - GIVEN a branch manager views the dashboard
 - WHEN the KPI tiles render
-- THEN the tiles show: Stock Total, Rotación de Stock, Cobertura (días), Stock Obsoleto, Stock Excesivo
+- THEN the tiles show: Total Stock, Stock Turnover, Coverage (days), Obsolete Stock, Excess Stock
 - AND all values are scoped to the manager's branch only
 
 #### Scenario: Override log visibility
@@ -77,11 +77,11 @@ The system **shall** display the following KPI tiles with consistent definitions
 
 | KPI | Formula |
 |-----|---------|
-| Stock Total | Σ(current_stock × APP/DDP) |
-| Rotación de Stock | Ingresos Año-12 / Stock Promedio-12 |
-| Cobertura (días) | 365 / Stock Turn Ratio |
-| Stock Obsoleto | merchandise without sales > 12 months |
-| Stock Excesivo | Stock Actual − (Demanda Proyectada + Stock Seguridad) |
+| Total Stock | Σ(current_stock × APP/DDP) |
+| Stock Turnover | Annual Revenue (Last 12 Months) / Average Stock-12 |
+| Coverage (days) | 365 / Stock Turn Ratio |
+| Obsolete Stock | merchandise without sales > 12 months |
+| Excess Stock | Stock Actual − (Demanda Proyectada + Stock Seguridad) |
 
 #### Scenario: KPI values match formula
 - GIVEN a branch with known stock and sales data
