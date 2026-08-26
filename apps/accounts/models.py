@@ -66,7 +66,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 class Role(models.Model):
     ADMINISTRATOR = "administrator"
-    GERENTE = "gerente"
+    GERENTE = "department_manager"
     COORDINATOR = "warehouse_coordinator"
     MANAGER = "warehouse_manager"
 
