@@ -104,18 +104,18 @@ The system **shall** read cross-reference relationships from the DMS (substituta
 - AND uses the aggregated value for Reorder Point evaluation
 
 ### REQ-CI-006: Branch topology read
-The system **shall** read branch topology from the DMS, including branch type (sucursal or distribution center), parent branch (for branches that depend on a DC), and branch managers.
+The system **shall** read branch topology from the DMS, including branch type (branch or distribution center), parent branch (for branches that depend on a DC), and branch managers.
 
 #### Scenario: DC topology with dependent branches
 - GIVEN a DC branch with two dependent branches
 - WHEN the system reads branch topology
 - THEN the DC is marked as distribution center with no parent
-- AND each sucursal has parent_branch_id pointing to the DC
+- AND each branch has parent_branch_id pointing to the DC
 
 #### Scenario: Flat topology (no DC)
 - GIVEN an organization with only branches and no DC
 - WHEN the system reads branch topology
-- THEN all branches have branch_type = sucursal and parent_branch_id = NULL
+- THEN all branches have branch_type = branch and parent_branch_id = NULL
 
 ### REQ-CI-007: DMS adapter pattern
 The system **shall** use an adapter interface for DMS integration, allowing different DMS implementations without modifying core logic. The adapter **shall** implement retry (3 attempts with exponential backoff) and timeout (30 seconds per call).
@@ -143,7 +143,7 @@ The system **shall** use an adapter interface for DMS integration, allowing diff
 - AC-2: Stock read completes within 30 seconds for 1K SKUs per branch
 - AC-3: Failed DMS read is logged with severity ERROR after 3 retries
 - AC-4: Cross-reference relationships are consumed as-is, not duplicated in Part table
-- AC-5: Branch topology correctly identifies DC vs sucursal and parent-child relationships
+- AC-5: Branch topology correctly identifies DC vs branch and parent-child relationships
 - AC-6: Adapter retry mechanism uses exponential backoff (1s, 2s, 4s) with 30s timeout
 
 ## Notes

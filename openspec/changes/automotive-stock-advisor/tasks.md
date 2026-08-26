@@ -44,7 +44,7 @@
 **Estimated lines**: ~350  
 **Dependencies**: WU-01  
 **Acceptance criteria**:
-- Branch model supports branch_type (sucursal/centro_distribucion) and parent_branch_id
+- Branch model supports branch_type (branch/distribution_center) and parent_branch_id
 - Part model stores internal_sku_code, primary_mfr_code, alt_mfr_codes (JSONB)
 - CrossReference model links related parts
 - Admin can create branches and upload parts via CSV
@@ -64,7 +64,7 @@
 **Estimated lines**: ~350  
 **Dependencies**: WU-03, WU-04  
 **Acceptance criteria**:
-- StockLevel model stores stock_disponible, stock_en_transito, last_synced_at per branch/part
+- StockLevel model stores available_stock, in_transit_stock, last_synced_at per branch/part
 - StockMovement model records sales/purchase/transfer movements with date
 - Ingestion service reads from DMS adapter and persists to DB
 - 12+ months of sales history can be imported
@@ -400,7 +400,7 @@
 **[x] T-008**: Branch model with DC topology  
 **Capability**: catalog-ingestion  
 **Work unit**: WU-03  
-**Description**: Create Branch model (id, tenant_id, name, branch_type [sucursal/centro_distribucion], parent_branch_id, config_json). Add self-referential FK for DC topology. Register in admin.  
+**Description**: Create Branch model (id, tenant_id, name, branch_type [branch/distribution_center], parent_branch_id, config_json). Add self-referential FK for DC topology. Register in admin.  
 **Files affected**: `apps/branches/models.py`, `apps/branches/migrations/`, `apps/branches/admin.py`  
 **Complexity**: S (0.5 day)  
 **Depends on**: T-002  
@@ -458,11 +458,11 @@
 **[x] T-014**: StockLevel and StockMovement models  
 **Capability**: catalog-ingestion  
 **Work unit**: WU-05  
-**Description**: Create StockLevel model (id, branch_id, part_id, stock_disponible, stock_en_transito, last_synced_at). Create StockMovement model (id, branch_id, part_id, movement_type [sale/purchase/transfer], quantity, date). Add unique constraint on (branch_id, part_id) for StockLevel.  
+**Description**: Create StockLevel model (id, branch_id, part_id, available_stock, in_transit_stock, last_synced_at). Create StockMovement model (id, branch_id, part_id, movement_type [sale/purchase/transfer], quantity, date). Add unique constraint on (branch_id, part_id) for StockLevel.  
 **Files affected**: `apps/inventory/models.py`, `apps/inventory/migrations/`, `apps/inventory/admin.py`  
 **Complexity**: S (0.5 day)  
 **Depends on**: T-009  
-**Acceptance criteria**: StockLevel stores stock_disponible and stock_en_transito separately, StockMovement records movement type and date
+**Acceptance criteria**: StockLevel stores available_stock and in_transit_stock separately, StockMovement records movement type and date
 
 **[x] T-015**: Inventory ingestion service  
 **Capability**: catalog-ingestion  
@@ -563,7 +563,7 @@
 **T-025**: Reorder Point and Order Quantity  
 **Capability**: planning-calculation  
 **Work unit**: WU-08  
-**Description**: Create PlanningService.calculate_punto_de_pedido(planning_target, lead_time_days) = planning_target + lead_time_days (raw numeric addition). Create PlanningService.calculate_cantidad_de_pedido(planning_target, stock_disponible, stock_en_transito) = max(0, planning_target - stock_disponible - stock_en_transito).  
+**Description**: Create PlanningService.calculate_punto_de_pedido(planning_target, lead_time_days) = planning_target + lead_time_days (raw numeric addition). Create PlanningService.calculate_cantidad_de_pedido(planning_target, available_stock, in_transit_stock) = max(0, planning_target - available_stock - in_transit_stock).  
 **Files affected**: `apps/replenishment/services.py`  
 **Complexity**: S (0.5 day)  
 **Depends on**: T-024  
